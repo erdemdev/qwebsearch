@@ -1,0 +1,70 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "QWebSearch",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": true
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "QWebSearch",
+      "longDescription": "",
+      "resources": [],
+      "shortDescription": "",
+      "targets": "msi",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "",
+        "wix": {
+          "bannerPath": "./images/installer-banner.jpg",
+          "dialogImagePath": "./images/installer-dialog.jpg"
+        }
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [
+      {
+        "title": "QWebSearch",
+        "label": "search-bar",
+        "width": 700,
+        "height": 100,
+        "x": -700,
+        "y": -100,
+        "fullscreen": false,
+        "resizable": false,
+        "transparent": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true
+      }
+    ],
+    "systemTray": {
+      "iconPath": "icons/Square30x30Logo.png",
+      "iconAsTemplate": true
+    }
+  }
+}
