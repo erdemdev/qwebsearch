@@ -7,7 +7,7 @@ import {
   unregister,
   unregisterAll,
 } from '@tauri-apps/api/globalShortcut';
-import googleIcon from './google.ico';
+import googleIcon from './google.png';
 
 export function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,15 +29,15 @@ export function SearchBar() {
           title: 'Select Preset',
           width: 500,
           height: 400,
-          x: 0,
-          y: 0,
+          // x: 0,
+          // y: 0,
           fullscreen: false,
           resizable: false,
           transparent: true,
           decorations: import.meta.env.DEV,
           alwaysOnTop: true,
           skipTaskbar: true,
-          // center: true,
+          center: true,
         });
         console.log('modal created.');
       });

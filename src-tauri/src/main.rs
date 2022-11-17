@@ -29,10 +29,10 @@ fn main() {
   tauri::Builder::default()
     .setup(|app| {
       // Only include this code if debug is enabled.
-      // #[cfg(debug_assertions)] {
-      //   let window = app.get_window("search-bar").unwrap();
-      //   window.open_devtools();
-      // }
+      #[cfg(debug_assertions)] {
+        let window = app.get_window("search-bar").unwrap();
+        window.open_devtools();
+      }
 
       // #region Exit app when main window is closed.
       let search_bar_window = app.get_window("search-bar").unwrap();
