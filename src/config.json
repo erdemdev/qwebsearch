@@ -6,7 +6,7 @@
   },
   "search-presets": [
     {
-      "id": 1,
+      "id": "ef2dccb2-f1a8-4caa-ac51-87e638b667ac",
       "label": "Google",
       "placeholder": "Google Search",
       "url": "https://google.com/search?q={{query}}",
@@ -16,7 +16,7 @@
       }
     },
     {
-      "id": 2,
+      "id": "e1c8e5c2-75fa-4c38-ac76-11c5b91647e3",
       "label": "YouTube",
       "placeholder": "Search for YouTube",
       "url": "https://www.youtube.com/results?search_query={{query}}",
@@ -26,7 +26,7 @@
       }
     },
     {
-      "id": 3,
+      "id": "e3d0c246-65ee-4cfc-aa09-14080294485a",
       "label": "Google Translate (ENG/TUR)",
       "placeholder": "English to Turkish translation",
       "url": "https://translate.google.com.tr/?hl=tr&tab=rT&sl=en&tl=tr&text={{query}}&op=translate",
