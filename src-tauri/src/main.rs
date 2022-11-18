@@ -27,7 +27,9 @@ fn custom_command(app_handle: tauri::AppHandle, state: tauri::State<MyState>) {
 
 #[tauri::command]
 fn open_devtools(window: tauri::Window) {
-  window.open_devtools()
+  #[cfg(debug_assertions)] {
+    window.open_devtools()
+  }
 }
 
 fn main() {
