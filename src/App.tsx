@@ -1,6 +1,6 @@
 import { getCurrent } from '@tauri-apps/api/window';
 import { SearchBar } from './SearchBar';
-import { SearchPresetModal } from './SearchPresetModal';
+import { SearchPresetsModal } from './SearchPresetsModal';
 
 export default function App() {
   return (() => {
@@ -8,7 +8,7 @@ export default function App() {
       case 'search-bar':
         return <SearchBar />;
       case 'search-preset-modal':
-        return <SearchPresetModal />;
+        return <SearchPresetsModal />;
       default:
         return null;
     }

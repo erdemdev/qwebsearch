@@ -56,8 +56,8 @@
     },
     "windows": [
       {
-        "title": "QWebSearch",
         "label": "search-bar",
+        "title": "QWebSearch",
         "width": 700,
         "height": 100,
         "x": -700,
