@@ -4,6 +4,7 @@
     "autostart": true,
     "toggle-shortcut": "Shift + Space"
   },
+  "default-search-preset": "ef2dccb2-f1a8-4caa-ac51-87e638b667ac",
   "search-presets": [
     {
       "id": "ef2dccb2-f1a8-4caa-ac51-87e638b667ac",
