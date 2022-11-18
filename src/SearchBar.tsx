@@ -2,16 +2,25 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { open } from '@tauri-apps/api/shell';
 import { getCurrent } from '@tauri-apps/api/window';
 import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api';
 import {
   register,
   unregister,
   unregisterAll,
 } from '@tauri-apps/api/globalShortcut';
-import googleIcon from './google.png';
+import { useAtom } from 'jotai';
+import { configAtom } from './state';
 import { createSearchPresetsWindow } from './utils/window';
 
 export function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [config, setConfig] = useAtom(configAtom);
+  const [searchPreset, setSearchPreset] = useState(() => {
+    for (let i = 0; i < config['search-presets'].length; i++) {
+      const preset = config['search-presets'][i];
+      if (preset.id === config['default-search-preset']) return preset;
+    }
+  });
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -26,9 +35,21 @@ export function SearchBar() {
       if (import.meta.env.DEV) {
         // await showSearchBar();
         createSearchPresetsWindow();
+        invoke('open_devtools');
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const match = searchQuery.match(/^(\w*):/i);
+
+    if (null === match) return;
+
+    // shortcode index is 1. 0 contains ":" symbol.
+    setSearchPreset(
+      config['search-presets'].find(preset => preset.shortcode === match[1])
+    );
+  }, [searchQuery]);
 
   const showSearchBar = useCallback(async () => {
     await unregister('Escape');
@@ -54,13 +75,22 @@ export function SearchBar() {
     await hideSearchBar();
   }, []);
 
+  const openBrowser = useCallback(async () => {
+    await open(
+      searchPreset?.url.replace(
+        '{{query}}',
+        encodeURIComponent(
+          searchQuery.replace(searchPreset.shortcode + ':', '').trimStart()
+        )
+      )!
+    );
+  }, [searchQuery]);
+
   return (
     <form
       onSubmit={async e => {
         e.preventDefault();
-        await open(
-          'https://google.com/search?q=' + encodeURIComponent(searchQuery)
-        );
+        openBrowser();
         hideSearchBar();
         setSearchQuery('');
       }}
@@ -71,7 +101,7 @@ export function SearchBar() {
           className="box-content w-8 self-center px-4"
           onClick={e => alert('Websearch Presets Modal')}
         >
-          <img src={googleIcon} alt="" />
+          <img src={searchPreset?.icon['data-uri']} alt="" />
         </div>
         <input
           ref={inputRef}
@@ -87,7 +117,7 @@ export function SearchBar() {
           spellCheck="false"
           className="text-bold w-full py-2 text-2xl leading-none text-gray-700 outline-none"
           value={searchQuery}
-          placeholder="Google Search"
+          placeholder={searchPreset?.placeholder}
         />
         <div className="block self-center">
           <svg
