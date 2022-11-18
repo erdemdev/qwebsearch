@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api';
 import { WebviewWindow } from '@tauri-apps/api/window';
 
 export function createSearchPresetsWindow() {
