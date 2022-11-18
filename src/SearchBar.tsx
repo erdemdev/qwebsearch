@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { open } from '@tauri-apps/api/shell';
-import { getCurrent, WebviewWindow } from '@tauri-apps/api/window';
+import { getCurrent } from '@tauri-apps/api/window';
 import { listen } from '@tauri-apps/api/event';
 import {
   register,
@@ -8,6 +8,7 @@ import {
   unregisterAll,
 } from '@tauri-apps/api/globalShortcut';
 import googleIcon from './google.png';
+import { createSearchPresetsWindow } from './utils/window';
 
 export function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,25 +23,10 @@ export function SearchBar() {
       await register('Shift + Space', async () => await toggleSearch());
       await listen('tray:left-click', async () => await showSearchBar());
 
-      if (import.meta.env.DEV) await showSearchBar();
-
-      await register('Ctrl + 0', async () => {
-        new WebviewWindow('search-preset-modal', {
-          title: 'Select Preset',
-          width: 500,
-          height: 400,
-          // x: 0,
-          // y: 0,
-          fullscreen: false,
-          resizable: false,
-          transparent: true,
-          decorations: import.meta.env.DEV,
-          alwaysOnTop: true,
-          skipTaskbar: true,
-          center: true,
-        });
-        console.log('modal created.');
-      });
+      if (import.meta.env.DEV) {
+        // await showSearchBar();
+        createSearchPresetsWindow();
+      }
     })();
   }, []);
 

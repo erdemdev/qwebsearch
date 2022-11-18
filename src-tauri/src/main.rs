@@ -25,14 +25,19 @@ fn custom_command(app_handle: tauri::AppHandle, state: tauri::State<MyState>) {
   app_handle.tray_handle().get_item("autostart").set_selected(*is_enabled).unwrap();
 }
 
+#[tauri::command]
+fn open_devtools(window: tauri::Window) {
+  window.open_devtools()
+}
+
 fn main() {
   tauri::Builder::default()
     .setup(|app| {
       // Only include this code if debug is enabled.
-      #[cfg(debug_assertions)] {
-        let window = app.get_window("search-bar").unwrap();
-        window.open_devtools();
-      }
+      // #[cfg(debug_assertions)] {
+      //   let window = app.get_window("search-bar").unwrap();
+      //   window.open_devtools();
+      // }
 
       // #region Exit app when main window is closed.
       let search_bar_window = app.get_window("search-bar").unwrap();
@@ -65,7 +70,7 @@ fn main() {
       Ok(())
     })
     .manage(MyState(false.into()))
-    .invoke_handler(tauri::generate_handler![custom_command])
+    .invoke_handler(tauri::generate_handler![custom_command, open_devtools])
     .system_tray(SystemTray::new().with_menu(
       SystemTrayMenu::new()
         .add_item(CustomMenuItem::new("autostart".to_string(),"Autostart"))
