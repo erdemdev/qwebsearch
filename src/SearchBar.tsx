@@ -3,11 +3,7 @@ import { open } from '@tauri-apps/api/shell';
 import { getCurrent } from '@tauri-apps/api/window';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api';
-import {
-  register,
-  unregister,
-  unregisterAll,
-} from '@tauri-apps/api/globalShortcut';
+import { register, unregister } from '@tauri-apps/api/globalShortcut';
 import { useAtom } from 'jotai';
 import { configAtom } from './state';
 import { createSearchPresetsWindow } from './utils/window';
@@ -16,9 +12,9 @@ export function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [config, setConfig] = useAtom(configAtom);
   const defaultSearchPreset = useMemo(() => {
-    for (let i = 0; i < config['search-presets'].length; i++) {
-      const preset = config['search-presets'][i];
-      if (preset.id === config['default-search-preset']) return preset;
+    for (let i = 0; i < config['search-presets']['collection'].length; i++) {
+      const preset = config['search-presets']['collection'][i];
+      if (preset.id === config['search-presets']['default']) return preset;
     }
   }, [config]);
   const [searchPreset, setSearchPreset] = useState(defaultSearchPreset);
@@ -27,7 +23,6 @@ export function SearchBar() {
 
   useEffect(() => {
     (async () => {
-      await unregisterAll();
       await register('Shift+Space', async () => await toggleSearch());
       await listen('tray:left-click', async () => await showSearchBar());
 
@@ -44,7 +39,7 @@ export function SearchBar() {
     const match = searchQuery.match(/^(\w*):/i);
     if (null === match) return setSearchPreset(defaultSearchPreset);
 
-    const preset = config['search-presets'].find(
+    const preset = config['search-presets']['collection'].find(
       preset => preset.shortcode === match[1] // shortcode index is 1. 0 contains ":" symbol.
     );
     if (undefined === preset) return setSearchPreset(defaultSearchPreset);
