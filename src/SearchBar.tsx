@@ -15,21 +15,20 @@ import { createSearchPresetsWindow } from './utils/window';
 export function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [config, setConfig] = useAtom(configAtom);
-  const [searchPreset, setSearchPreset] = useState(() => {
+  const defaultSearchPreset = useMemo(() => {
     for (let i = 0; i < config['search-presets'].length; i++) {
       const preset = config['search-presets'][i];
       if (preset.id === config['default-search-preset']) return preset;
     }
-  });
-
+  }, [config]);
+  const [searchPreset, setSearchPreset] = useState(defaultSearchPreset);
   const inputRef = useRef<HTMLInputElement>(null);
-
   const searchBarWindow = useMemo(() => getCurrent(), []);
 
   useEffect(() => {
     (async () => {
       await unregisterAll();
-      await register('Shift + Space', async () => await toggleSearch());
+      await register('Shift+Space', async () => await toggleSearch());
       await listen('tray:left-click', async () => await showSearchBar());
 
       if (import.meta.env.DEV) {
@@ -40,16 +39,19 @@ export function SearchBar() {
     })();
   }, []);
 
+  //#region update search preset
   useEffect(() => {
     const match = searchQuery.match(/^(\w*):/i);
+    if (null === match) return setSearchPreset(defaultSearchPreset);
 
-    if (null === match) return;
-
-    // shortcode index is 1. 0 contains ":" symbol.
-    setSearchPreset(
-      config['search-presets'].find(preset => preset.shortcode === match[1])
+    const preset = config['search-presets'].find(
+      preset => preset.shortcode === match[1] // shortcode index is 1. 0 contains ":" symbol.
     );
+    if (undefined === preset) return setSearchPreset(defaultSearchPreset);
+
+    setSearchPreset(preset);
   }, [searchQuery]);
+  //#endregion
 
   const showSearchBar = useCallback(async () => {
     await unregister('Escape');
@@ -84,7 +86,7 @@ export function SearchBar() {
         )
       )!
     );
-  }, [searchQuery]);
+  }, [searchQuery, searchPreset]);
 
   return (
     <form
