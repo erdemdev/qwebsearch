@@ -13,15 +13,6 @@ if (import.meta.env.PROD) {
     },
     { capture: true }
   );
-
-  document.addEventListener(
-    'selectstart',
-    e => {
-      e.preventDefault();
-      return false;
-    },
-    { capture: true }
-  );
 }
 // #endregion
 
