@@ -25,7 +25,6 @@ export function SearchBar() {
   //#region Register search bar listeners.
   useEffect(() => {
     let unlistenTrayLeftClick: UnlistenFn | undefined = undefined;
-    let unlistenTauriBlur: UnlistenFn | undefined = undefined;
 
     (async () => {
       await register('Shift+Space', async () => {
@@ -38,10 +37,6 @@ export function SearchBar() {
         setVisible(true)
       );
 
-      unlistenTauriBlur = await searchBarWindow.listen('tauri://blur', () =>
-        setVisible(false)
-      );
-
       if (import.meta.env.DEV) {
         // await showSearchBar();
         // createSearchPresetsWindow();
@@ -52,19 +47,23 @@ export function SearchBar() {
     return () => {
       (async () => await unregister('Shift+Space'))();
       if (undefined !== unlistenTrayLeftClick) unlistenTrayLeftClick();
-      if (undefined !== unlistenTauriBlur) unlistenTauriBlur();
     };
   }, []);
   //#endregion
 
   // #region Listen [visible] state for search bar toggling.
   useEffect(() => {
+    let unlistenTauriBlur: UnlistenFn | undefined = undefined;
+
     (async () => {
       if (visible) {
         await register('Escape', () => setVisible(false));
         await searchBarWindow.setFocus();
         await searchBarWindow.center();
         inputRef.current?.focus();
+        unlistenTauriBlur = await searchBarWindow.listen('tauri://blur', () =>
+          setVisible(false)
+        );
       } else {
         const searchBarSize = await searchBarWindow.outerSize();
         searchBarWindow.setPosition({
@@ -76,9 +75,10 @@ export function SearchBar() {
     })();
 
     return () => {
+      if (undefined !== unlistenTauriBlur) unlistenTauriBlur();
       (async () => await unregister('Escape'))();
     };
-  }, [visible]);
+  }, [visible]); // TODO: add a dependency for search-presets-modal visible state.
   //#endregion
 
   //#region "searchQuery" updates search preset selector.
