@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { open } from '@tauri-apps/api/shell';
-import { getCurrent } from '@tauri-apps/api/window';
-import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api';
 import { register, unregister } from '@tauri-apps/api/globalShortcut';
+import { getCurrent } from '@tauri-apps/api/window';
+import { listen, UnlistenFn } from '@tauri-apps/api/event';
+import { open } from '@tauri-apps/api/shell';
 import { useAtom } from 'jotai';
 import { configAtom } from './state';
 import { createSearchPresetsWindow } from './utils/window';
 
 export function SearchBar() {
+  const [visible, setVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [config, setConfig] = useAtom(configAtom);
   const defaultSearchPreset = useMemo(() => {
@@ -21,20 +22,66 @@ export function SearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const searchBarWindow = useMemo(() => getCurrent(), []);
 
+  //#region Register search bar listeners.
   useEffect(() => {
+    let unlistenTrayLeftClick: UnlistenFn | undefined = undefined;
+    let unlistenTauriBlur: UnlistenFn | undefined = undefined;
+
     (async () => {
-      await register('Shift+Space', async () => await toggleSearch());
-      await listen('tray:left-click', async () => await showSearchBar());
+      await register('Shift+Space', async () => {
+        if ((await searchBarWindow.outerPosition()).x === -700)
+          return setVisible(true);
+        return setVisible(false);
+      });
+
+      unlistenTrayLeftClick = await listen('tray:left-click', async () =>
+        setVisible(true)
+      );
+
+      unlistenTauriBlur = await searchBarWindow.listen('tauri://blur', () =>
+        setVisible(false)
+      );
 
       if (import.meta.env.DEV) {
         // await showSearchBar();
-        createSearchPresetsWindow();
+        // createSearchPresetsWindow();
         invoke('open_devtools');
       }
     })();
-  }, []);
 
-  //#region update search preset
+    return () => {
+      (async () => await unregister('Shift+Space'))();
+      if (undefined !== unlistenTrayLeftClick) unlistenTrayLeftClick();
+      if (undefined !== unlistenTauriBlur) unlistenTauriBlur();
+    };
+  }, []);
+  //#endregion
+
+  // #region Listen [visible] state for search bar toggling.
+  useEffect(() => {
+    (async () => {
+      if (visible) {
+        await register('Escape', () => setVisible(false));
+        await searchBarWindow.setFocus();
+        await searchBarWindow.center();
+        inputRef.current?.focus();
+      } else {
+        const searchBarSize = await searchBarWindow.outerSize();
+        searchBarWindow.setPosition({
+          type: 'Physical',
+          x: -searchBarSize.width,
+          y: -searchBarSize.height,
+        });
+      }
+    })();
+
+    return () => {
+      (async () => await unregister('Escape'))();
+    };
+  }, [visible]);
+  //#endregion
+
+  //#region "searchQuery" updates search preset selector.
   useEffect(() => {
     const match = searchQuery.match(/^(\w*):/i);
     if (null === match) return setSearchPreset(defaultSearchPreset);
@@ -48,30 +95,7 @@ export function SearchBar() {
   }, [searchQuery]);
   //#endregion
 
-  const showSearchBar = useCallback(async () => {
-    await unregister('Escape');
-    await register('Escape', hideSearchBar);
-    await searchBarWindow.setFocus();
-    await searchBarWindow.center();
-    inputRef.current?.focus();
-  }, []);
-
-  const hideSearchBar = useCallback(async () => {
-    await unregister('Escape');
-    const searchBarSize = await searchBarWindow.outerSize();
-    searchBarWindow.setPosition({
-      type: 'Physical',
-      x: -searchBarSize.width,
-      y: -searchBarSize.height,
-    });
-  }, []);
-
-  const toggleSearch = useCallback(async () => {
-    if ((await searchBarWindow.outerPosition()).x === -700)
-      return await showSearchBar();
-    await hideSearchBar();
-  }, []);
-
+  // #region Callbacks
   const openBrowser = useCallback(async () => {
     await open(
       searchPreset?.url.replace(
@@ -82,34 +106,32 @@ export function SearchBar() {
       )!
     );
   }, [searchQuery, searchPreset]);
+  //#endregion
 
+  // #region Render
   return (
     <form
       onSubmit={async e => {
         e.preventDefault();
         openBrowser();
-        hideSearchBar();
+        setVisible(false);
         setSearchQuery('');
       }}
       className="absolute flex h-full w-full items-center justify-center px-3"
     >
       <div className="flex w-full overflow-hidden rounded-md border-2 border-gray-300 bg-white shadow-lg">
         <div
-          className="box-content w-8 self-center px-4"
-          onClick={e => alert('Websearch Presets Modal')}
+          className="box-content w-8 self-center px-4 hover:cursor-pointer"
+          onClick={() => {
+            // if (undefined !== unlistenBlurEvent) unlistenBlurEvent();
+            createSearchPresetsWindow();
+          }}
         >
           <img src={searchPreset?.icon['data-uri']} alt="" />
         </div>
         <input
           ref={inputRef}
           onChange={e => setSearchQuery(e.currentTarget.value)}
-          onBlur={e =>
-            import.meta.env.PROD
-              ? hideSearchBar()
-              : console.info(
-                  'Firing hideSearchBar() on blur disabled for debug mode.'
-                )
-          }
           autoComplete="off"
           spellCheck="false"
           className="text-bold w-full py-2 text-2xl leading-none text-gray-700 outline-none"
@@ -128,4 +150,5 @@ export function SearchBar() {
       </div>
     </form>
   );
+  // #endregion
 }

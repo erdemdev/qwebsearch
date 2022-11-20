@@ -13,6 +13,6 @@ export function createSearchPresetsWindow() {
     decorations: import.meta.env.DEV,
     alwaysOnTop: true,
     skipTaskbar: import.meta.env.PROD,
-    // center: true,
+    center: true,
   });
 }

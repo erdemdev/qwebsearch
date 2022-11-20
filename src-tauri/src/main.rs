@@ -52,23 +52,21 @@ fn main() {
       });
       // #endregion
 
-      // #region Autostart
-      let app_name = &app.package_info().name;
-      let current_exe = current_exe().unwrap();
-
-      let auto_start = AutoLaunchBuilder::new()
-        .set_app_name(&app_name)
-        .set_app_path(&current_exe.to_str().unwrap())
-        .set_use_launch_agent(true)
-        .build()
-        .unwrap();
-
       #[cfg(not(debug_assertions))] {
+        let app_name = &app.package_info().name;
+        let current_exe = current_exe().unwrap();
+
+        let auto_start = AutoLaunchBuilder::new()
+          .set_app_name(&app_name)
+          .set_app_path(&current_exe.to_str().unwrap())
+          .set_use_launch_agent(true)
+          .build()
+          .unwrap();
+
+      
         auto_start.enable().unwrap();
         println!("is autostart {}", auto_start.is_enabled().unwrap());
       }
-      // #endregion
-
       Ok(())
     })
     .manage(MyState(false.into()))
