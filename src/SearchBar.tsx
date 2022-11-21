@@ -4,20 +4,19 @@ import { register, unregister } from '@tauri-apps/api/globalShortcut';
 import { getCurrent } from '@tauri-apps/api/window';
 import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/api/shell';
-import { useAtom } from 'jotai';
-import { configAtom } from './state';
+import { useConfig } from './hooks/config';
 import { createSearchPresetsWindow } from './utils/window';
 
 export function SearchBar() {
-  const [visible, setVisible] = useState(false);
-  const [query, setQuery] = useState('');
-  const [config, setConfig] = useAtom(configAtom);
+  const { config, setConfig } = useConfig();
   const defaultPreset = useMemo(() => {
     for (let i = 0; i < config['search-presets']['collection'].length; i++) {
       const preset = config['search-presets']['collection'][i];
       if (preset.id === config['search-presets']['default']) return preset;
     }
   }, [config]);
+  const [visible, setVisible] = useState(false);
+  const [query, setQuery] = useState('');
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
   const currentWindow = useMemo(() => getCurrent(), []);
@@ -37,6 +36,8 @@ export function SearchBar() {
         'tauri://SystemTrayEvent::LeftClick',
         async () => setVisible(true)
       );
+
+      await listen('ts://hideSearchBar', () => alert('ts://hideSearchBar'));
 
       if (import.meta.env.DEV) {
         invoke('open_devtools');
@@ -121,10 +122,7 @@ export function SearchBar() {
       <div className="flex w-full overflow-hidden rounded-md border-2 border-gray-300 bg-white shadow-lg">
         <div
           className="box-content w-8 self-center px-4 hover:cursor-pointer"
-          onClick={() => {
-            createSearchPresetsWindow();
-            setVisible(false);
-          }}
+          onClick={() => createSearchPresetsWindow()}
         >
           <img src={preset?.icon['data-uri']} alt="" />
         </div>

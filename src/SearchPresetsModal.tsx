@@ -1,15 +1,18 @@
 import { invoke } from '@tauri-apps/api';
-import { useAtom } from 'jotai';
-import { useEffect } from 'react';
-import { configAtom } from './state';
+import { useEffect, useState } from 'react';
+import { useConfig } from './hooks/config';
 
 export function SearchPresetsModal() {
-  const [config] = useAtom(configAtom);
+  const { config, setConfig } = useConfig();
 
   useEffect(() => {
     if (import.meta.env.DEV) invoke('open_devtools');
-    console.log('config: ', config);
-  }, [config]);
+    // const newConfig = { ...config };
+    // newConfig.app.version = 'sex';
+    // setConfig(newConfig);
+  }, []);
+
+  console.log(Date.now(), config.app.version);
 
   return (
     <div className="absolute left-0 top-0 h-full w-full bg-red-100 p-2">
