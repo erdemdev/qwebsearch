@@ -9,12 +9,13 @@ import { createSearchPresetsWindow } from './utils/window';
 
 export function SearchBar() {
   const { config, setConfig, isLoading } = useConfig();
-  const defaultPreset = useMemo(() => {
-    for (let i = 0; i < config['search-presets']['collection'].length; i++) {
-      const preset = config['search-presets']['collection'][i];
-      if (preset.id === config['search-presets']['default']) return preset;
-    }
-  }, [config]);
+  const defaultPreset = useMemo(
+    () =>
+      config['search-presets'].collection.find(
+        item => item.id === config['search-presets'].default
+      ),
+    [config]
+  );
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState('');
   const [preset, setPreset] = useState(defaultPreset);
@@ -22,7 +23,6 @@ export function SearchBar() {
   const currentWindow = useMemo(() => getCurrent(), []);
 
   //#region Setup
-  // Wait fot config to load before registering event listeners.
   useEffect(() => {
     let unlistenTrayLeftClick: UnlistenFn | undefined = undefined;
 
@@ -40,6 +40,8 @@ export function SearchBar() {
         async () => setVisible(true)
       );
 
+      setPreset(defaultPreset);
+      
       await listen('ts://hideSearchBar', () => alert('ts://hideSearchBar'));
 
       if (import.meta.env.DEV) {
@@ -99,7 +101,7 @@ export function SearchBar() {
   }, [query]);
   //#endregion
 
-  // #region Callbacks
+  // #region Open Browser Callback
   const openBrowser = useCallback(async () => {
     await open(
       preset?.url.replace(
@@ -113,6 +115,7 @@ export function SearchBar() {
   //#endregion
 
   // #region Render
+  if (isLoading) return;
   return (
     <form
       onSubmit={async e => {
