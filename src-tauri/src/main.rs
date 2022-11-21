@@ -83,7 +83,7 @@ fn main() {
         size: _,
         ..
       } => {
-        app.emit_to("search-bar", "tray:left-click", {}).unwrap();
+        app.emit_to("search-bar", "tauri://SystemTrayEvent::LeftClick", {}).unwrap();
       }
       SystemTrayEvent::MenuItemClick { id, .. } => {
         match id.as_str() {

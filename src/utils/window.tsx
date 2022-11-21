@@ -1,7 +1,7 @@
 import { WebviewWindow } from '@tauri-apps/api/window';
 
 export function createSearchPresetsWindow() {
-  return new WebviewWindow('search-preset-modal', {
+  const window = new WebviewWindow('search-preset-modal', {
     title: 'Search Presets Modal',
     width: 500,
     height: 400,
@@ -15,4 +15,8 @@ export function createSearchPresetsWindow() {
     skipTaskbar: import.meta.env.PROD,
     center: true,
   });
+
+  window.once('tauri://created', async () => await window.setFocus());
+
+  return window;
 }
