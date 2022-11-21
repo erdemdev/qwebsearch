@@ -8,7 +8,7 @@ import { useConfig } from './hooks/config';
 import { createSearchPresetsWindow } from './utils/window';
 
 export function SearchBar() {
-  const { config, setConfig } = useConfig();
+  const { config, setConfig, isLoading } = useConfig();
   const defaultPreset = useMemo(() => {
     for (let i = 0; i < config['search-presets']['collection'].length; i++) {
       const preset = config['search-presets']['collection'][i];
@@ -21,11 +21,14 @@ export function SearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const currentWindow = useMemo(() => getCurrent(), []);
 
-  //#region Register search bar listeners.
+  //#region Setup
+  // Wait fot config to load before registering event listeners.
   useEffect(() => {
     let unlistenTrayLeftClick: UnlistenFn | undefined = undefined;
 
     (async () => {
+      if (isLoading) return;
+
       await register('Shift+Space', async () => {
         if ((await currentWindow.outerPosition()).x === -700)
           return setVisible(true);
@@ -48,10 +51,10 @@ export function SearchBar() {
       (async () => await unregister('Shift+Space'))();
       if (undefined !== unlistenTrayLeftClick) unlistenTrayLeftClick();
     };
-  }, []);
+  }, [isLoading]);
   //#endregion
 
-  // #region Listen [visible] state for search bar toggling.
+  // #region Toggle Listener
   useEffect(() => {
     let unlistenTauriBlur: UnlistenFn | undefined = undefined;
 
@@ -81,7 +84,8 @@ export function SearchBar() {
   }, [visible]);
   //#endregion
 
-  //#region "query" updates preset selector.
+  // #region Shortcode Listener
+  // "query" updates preset selector.
   useEffect(() => {
     const match = query.match(/^(\w*):/i);
     if (null === match) return setPreset(defaultPreset);

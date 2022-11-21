@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 
 export function useConfig() {
   const [config, setConfig] = useState(defaultConfig);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -35,8 +36,10 @@ export function useConfig() {
 
         setConfig(newConfig);
       }
+
+      setIsLoading(false);
     })();
   }, []);
 
-  return { config, setConfig };
+  return { config, setConfig, isLoading };
 }
