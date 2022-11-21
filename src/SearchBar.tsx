@@ -41,7 +41,7 @@ export function SearchBar() {
       );
 
       setPreset(defaultPreset);
-      
+
       await listen('ts://hideSearchBar', () => alert('ts://hideSearchBar'));
 
       if (import.meta.env.DEV) {
@@ -56,7 +56,7 @@ export function SearchBar() {
   }, [isLoading]);
   //#endregion
 
-  // #region Toggle Listener
+  // #region Visibility Listener
   useEffect(() => {
     let unlistenTauriBlur: UnlistenFn | undefined = undefined;
 
@@ -87,7 +87,6 @@ export function SearchBar() {
   //#endregion
 
   // #region Shortcode Listener
-  // "query" updates preset selector.
   useEffect(() => {
     const match = query.match(/^(\w*):/i);
     if (null === match) return setPreset(defaultPreset);
