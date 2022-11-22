@@ -41,5 +41,5 @@ export function useConfig() {
     })();
   }, []);
 
-  return { config, setConfig, isLoading };
+  return { config, setConfig, isConfigLoading: isLoading };
 }

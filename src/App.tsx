@@ -7,7 +7,7 @@ export default function App() {
     switch (getCurrent().label) {
       case 'search-bar':
         return <SearchBar />;
-      case 'search-preset-modal':
+      case 'search-presets-modal':
         return <SearchPresetsModal />;
       default:
         return null;

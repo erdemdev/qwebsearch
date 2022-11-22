@@ -1,21 +1,15 @@
 import { invoke } from '@tauri-apps/api';
-import { emit } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
 import { useConfig } from './hooks/config';
-import { Events } from './constants';
 
 export function SearchPresetsModal() {
-  const { config, setConfig, isLoading } = useConfig();
+  const { config, setConfig, isConfigLoading } = useConfig();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isConfigLoading) return;
 
-    // if (import.meta.env.DEV) invoke('open_devtools');
-
-    (async () => {
-      await emit(Events.SearchPresetsModal.created);
-    })();
-  }, [isLoading]);
+    if (import.meta.env.DEV) invoke('open_devtools');
+  }, [isConfigLoading]);
 
   return (
     <div className="absolute left-0 top-0 h-full w-full bg-red-100 p-2">

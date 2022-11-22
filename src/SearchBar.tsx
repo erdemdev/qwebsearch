@@ -5,27 +5,30 @@ import { getCurrent } from '@tauri-apps/api/window';
 import { listen, TauriEvent } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/api/shell';
 import { useConfig } from './hooks/config';
-import { createSearchPresetsWindow } from './utils/window';
-import { Events } from './constants';
+import { useWindow } from './hooks/window';
 
 export function SearchBar() {
-  const { config, setConfig, isLoading } = useConfig();
+  const { config, setConfig, isConfigLoading } = useConfig();
   const defaultPreset = useMemo(
     () =>
       config['search-presets'].collection.find(
         item => item.id === config['search-presets'].default
       ),
-    [config, isLoading]
+    [config, isConfigLoading]
   );
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState('');
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
   const currentWindow = useMemo(() => getCurrent(), []);
+  const {
+    window: searchPresetsWindow,
+    createWindow: createSearchPresetsWindow,
+  } = useWindow('search-presets-modal');
 
   //#region Setup
   useEffect(() => {
-    if (isLoading) return;
+    if (isConfigLoading || searchPresetsWindow) return;
 
     const cleanupFns: (() => void)[] = [];
 
@@ -44,10 +47,6 @@ export function SearchBar() {
         )
       );
 
-      cleanupFns.push(
-        await listen(Events.SearchPresetsModal.created, () => cleanup())
-      );
-
       if (import.meta.env.DEV) {
         invoke('open_devtools');
       }
@@ -58,7 +57,7 @@ export function SearchBar() {
     }
 
     return cleanup;
-  }, [isLoading]);
+  }, [isConfigLoading, searchPresetsWindow]);
   //#endregion
 
   // #region Visibility Listener
@@ -121,7 +120,6 @@ export function SearchBar() {
   //#endregion
 
   // #region Render
-  if (isLoading) return;
   return (
     <form
       onSubmit={async e => {
