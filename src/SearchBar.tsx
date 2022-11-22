@@ -2,10 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api';
 import { register, unregister } from '@tauri-apps/api/globalShortcut';
 import { getCurrent } from '@tauri-apps/api/window';
-import { listen, UnlistenFn } from '@tauri-apps/api/event';
+import { listen, TauriEvent } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/api/shell';
 import { useConfig } from './hooks/config';
 import { createSearchPresetsWindow } from './utils/window';
+import { Events } from './constants';
 
 export function SearchBar() {
   const { config, setConfig, isLoading } = useConfig();
@@ -26,8 +27,7 @@ export function SearchBar() {
   useEffect(() => {
     if (isLoading) return;
 
-    let unlistenTrayLeftClick: UnlistenFn | undefined = undefined;
-    let unlistenHideSearchBar: UnlistenFn | undefined = undefined;
+    const cleanupFns: (() => void)[] = [];
 
     (async () => {
       await register('Shift+Space', async () => {
@@ -36,13 +36,16 @@ export function SearchBar() {
         return setVisible(false);
       });
 
-      unlistenTrayLeftClick = await listen(
-        'tauri://SystemTrayEvent::LeftClick',
-        async () => setVisible(true)
+      cleanupFns.push(() => unregister('Shift+Space'));
+
+      cleanupFns.push(
+        await listen('tauri://SystemTrayEvent::LeftClick', async () =>
+          setVisible(true)
+        )
       );
 
-      unlistenHideSearchBar = await listen('ts://hideSearchBar', () =>
-        alert('ts://hideSearchBar fired!')
+      cleanupFns.push(
+        await listen(Events.SearchPresetsModal.created, () => cleanup())
       );
 
       if (import.meta.env.DEV) {
@@ -50,26 +53,29 @@ export function SearchBar() {
       }
     })();
 
-    return () => {
-      (async () => await unregister('Shift+Space'))();
-      if (undefined !== unlistenTrayLeftClick) unlistenTrayLeftClick();
-      if (undefined !== unlistenHideSearchBar) unlistenHideSearchBar();
-    };
+    function cleanup() {
+      cleanupFns.forEach(fn => fn());
+    }
+
+    return cleanup;
   }, [isLoading]);
   //#endregion
 
   // #region Visibility Listener
   useEffect(() => {
-    let unlistenTauriBlur: UnlistenFn | undefined = undefined;
+    const cleanupFns: (() => void)[] = [];
 
     (async () => {
       if (visible) {
-        await register('Escape', () => setVisible(false));
         await currentWindow.setFocus();
         await currentWindow.center();
         inputRef.current?.focus();
-        unlistenTauriBlur = await currentWindow.listen('tauri://blur', () =>
-          setVisible(false)
+        await register('Escape', () => setVisible(false));
+        cleanupFns.push(() => unregister('Escape'));
+        cleanupFns.push(
+          await currentWindow.listen(TauriEvent.WINDOW_BLUR, () =>
+            setVisible(false)
+          )
         );
       } else {
         const searchBarSize = await currentWindow.outerSize();
@@ -81,9 +87,8 @@ export function SearchBar() {
       }
     })();
 
-    return () => {
-      if (undefined !== unlistenTauriBlur) unlistenTauriBlur();
-      (async () => await unregister('Escape'))();
+    return function cleanup() {
+      cleanupFns.forEach(fn => fn());
     };
   }, [visible]);
   //#endregion
