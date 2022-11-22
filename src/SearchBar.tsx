@@ -14,7 +14,7 @@ export function SearchBar() {
       config['search-presets'].collection.find(
         item => item.id === config['search-presets'].default
       ),
-    [config]
+    [config, isLoading]
   );
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState('');
@@ -24,11 +24,12 @@ export function SearchBar() {
 
   //#region Setup
   useEffect(() => {
+    if (isLoading) return;
+
     let unlistenTrayLeftClick: UnlistenFn | undefined = undefined;
+    let unlistenHideSearchBar: UnlistenFn | undefined = undefined;
 
     (async () => {
-      if (isLoading) return;
-
       await register('Shift+Space', async () => {
         if ((await currentWindow.outerPosition()).x === -700)
           return setVisible(true);
@@ -40,9 +41,9 @@ export function SearchBar() {
         async () => setVisible(true)
       );
 
-      setPreset(defaultPreset);
-
-      await listen('ts://hideSearchBar', () => alert('ts://hideSearchBar'));
+      unlistenHideSearchBar = await listen('ts://hideSearchBar', () =>
+        alert('ts://hideSearchBar fired!')
+      );
 
       if (import.meta.env.DEV) {
         invoke('open_devtools');
@@ -52,6 +53,7 @@ export function SearchBar() {
     return () => {
       (async () => await unregister('Shift+Space'))();
       if (undefined !== unlistenTrayLeftClick) unlistenTrayLeftClick();
+      if (undefined !== unlistenHideSearchBar) unlistenHideSearchBar();
     };
   }, [isLoading]);
   //#endregion
