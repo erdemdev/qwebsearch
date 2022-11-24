@@ -34,7 +34,10 @@ export function SearchBar() {
 
     (async () => {
       await register('Shift+Space', async () => {
-        if ((await currentWindow.outerPosition()).x === -700)
+        if (
+          (await currentWindow.outerPosition()).x ===
+          -(await currentWindow.outerSize()).width
+        )
           return setVisible(true);
         return setVisible(false);
       });
