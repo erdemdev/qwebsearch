@@ -21,10 +21,8 @@ export function SearchBar() {
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
   const currentWindow = useMemo(() => getCurrent(), []);
-  const {
-    window: searchPresetsWindow,
-    createWindow: createSearchPresetsWindow,
-  } = useWindow('search-presets-modal');
+  const { window: searchPresetsWindow, createWindow: createSearchPresetsWindow } =
+    useWindow('search-presets-modal');
 
   //#region Setup
   useEffect(() => {
@@ -45,9 +43,7 @@ export function SearchBar() {
       cleanupFns.push(() => unregister('Shift+Space'));
 
       cleanupFns.push(
-        await listen('tauri://SystemTrayEvent::LeftClick', async () =>
-          setVisible(true)
-        )
+        await listen('tauri://SystemTrayEvent::LeftClick', async () => setVisible(true))
       );
 
       if (import.meta.env.DEV) {
@@ -75,9 +71,7 @@ export function SearchBar() {
         await register('Escape', () => setVisible(false));
         cleanupFns.push(() => unregister('Escape'));
         cleanupFns.push(
-          await currentWindow.listen(TauriEvent.WINDOW_BLUR, () =>
-            setVisible(false)
-          )
+          await currentWindow.listen(TauriEvent.WINDOW_BLUR, () => setVisible(false))
         );
       } else {
         const searchBarSize = await currentWindow.outerSize();
@@ -101,7 +95,8 @@ export function SearchBar() {
     if (null === match) return setPreset(defaultPreset);
 
     const preset = config['search-presets']['collection'].find(
-      preset => preset.shortcode === match[1] // shortcode index is 1. 0 contains ":" symbol.
+      // shortcode index is 1. 0 contains shortcode with ":" symbol at the end.
+      preset => preset.shortcode === match[1]
     );
     if (undefined === preset) return setPreset(defaultPreset);
 
@@ -114,9 +109,7 @@ export function SearchBar() {
     await open(
       preset?.url.replace(
         '{{query}}',
-        encodeURIComponent(
-          query.replace(preset.shortcode + ':', '').trimStart()
-        )
+        encodeURIComponent(query.replace(preset.shortcode + ':', '').trimStart())
       )!
     );
   }, [query, preset]);

@@ -18,8 +18,7 @@ export function useConfig() {
           await readTextFile(appPath + '/config.json')
         );
 
-        if (savedConfig.app.version !== appVersion)
-          throw 'App version is different.';
+        if (savedConfig.app.version !== appVersion) throw 'App version is different.';
 
         setConfig(savedConfig);
       } catch (error) {
@@ -29,10 +28,7 @@ export function useConfig() {
         newConfig.app.version = appVersion;
 
         await createDir(appPath, { recursive: true });
-        await writeTextFile(
-          appPath + '/config.json',
-          JSON.stringify(newConfig)
-        );
+        await writeTextFile(appPath + '/config.json', JSON.stringify(newConfig));
 
         setConfig(newConfig);
       }
