@@ -9,7 +9,7 @@ import { useWindow } from './hooks/window';
 
 export function SearchBar() {
   //#region Hooks
-  const { config, setConfig, isConfigLoading } = useConfig();
+  const [config, setConfig, isConfigLoading] = useConfig();
   const defaultPreset = useMemo(
     () =>
       config['search-presets'].collection.find(
@@ -22,7 +22,7 @@ export function SearchBar() {
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchBarWindow = useMemo(() => getCurrent(), []);
-  const { window: searchPresetsWindow, createWindow: createSearchPresetsWindow } =
+  const [searchPresetsWindow, createSearchPresetsWindow] =
     useWindow('search-presets-modal');
   //#endregion
 

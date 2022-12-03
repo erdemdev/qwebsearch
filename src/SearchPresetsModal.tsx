@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useConfig } from './hooks/config';
 
 export function SearchPresetsModal() {
-  const { config, setConfig, isConfigLoading } = useConfig();
+  const [config, setConfig, isConfigLoading] = useConfig();
 
   useEffect(() => {
     if (isConfigLoading) return;

@@ -4,7 +4,11 @@ import { getVersion } from '@tauri-apps/api/app';
 import defaultConfig from './config.json';
 import { useEffect, useState } from 'react';
 
-export function useConfig() {
+export function useConfig(): [
+  config: typeof config,
+  setConfig: typeof setConfig,
+  isConfigLoading: typeof isLoading
+] {
   const [config, setConfig] = useState(defaultConfig);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -37,5 +41,6 @@ export function useConfig() {
     })();
   }, []);
 
-  return { config, setConfig, isConfigLoading: isLoading };
+  // return { config, setConfig, isConfigLoading: isLoading };
+  return [config, setConfig, isLoading];
 }
