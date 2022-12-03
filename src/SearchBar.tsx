@@ -8,6 +8,7 @@ import { useConfig } from './hooks/config';
 import { useWindow } from './hooks/window';
 
 export function SearchBar() {
+  //#region Hooks
   const { config, setConfig, isConfigLoading } = useConfig();
   const defaultPreset = useMemo(
     () =>
@@ -23,8 +24,9 @@ export function SearchBar() {
   const searchBarWindow = useMemo(() => getCurrent(), []);
   const { window: searchPresetsWindow, createWindow: createSearchPresetsWindow } =
     useWindow('search-presets-modal');
+  //#endregion
 
-  //#region Setup
+  //#region Initial Listeners
   useEffect(() => {
     if (isConfigLoading || searchPresetsWindow) return;
 
@@ -45,10 +47,6 @@ export function SearchBar() {
       cleanupFns.push(
         await listen('tauri://SystemTrayEvent::LeftClick', async () => setVisible(true))
       );
-
-      if (import.meta.env.DEV) {
-        invoke('open_devtools');
-      }
     })();
 
     function cleanup() {
@@ -57,6 +55,16 @@ export function SearchBar() {
 
     return cleanup;
   }, [isConfigLoading, searchPresetsWindow]);
+  //#endregion
+
+  //#region Debug Listeners
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      invoke('open_devtools');
+
+      if (import.meta.env.VITE_SHOW_SEARCH_PRESETS_WINDOW) createSearchPresetsWindow();
+    }
+  }, [isConfigLoading]);
   //#endregion
 
   // #region Visibility Listener
