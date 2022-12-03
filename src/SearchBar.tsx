@@ -20,7 +20,7 @@ export function SearchBar() {
   const [query, setQuery] = useState('');
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
-  const currentWindow = useMemo(() => getCurrent(), []);
+  const searchBarWindow = useMemo(() => getCurrent(), []);
   const { window: searchPresetsWindow, createWindow: createSearchPresetsWindow } =
     useWindow('search-presets-modal');
 
@@ -33,8 +33,8 @@ export function SearchBar() {
     (async () => {
       await register('Shift+Space', async () => {
         if (
-          (await currentWindow.outerPosition()).x ===
-          -(await currentWindow.outerSize()).width
+          (await searchBarWindow.outerPosition()).x ===
+          -(await searchBarWindow.outerSize()).width
         )
           return setVisible(true);
         return setVisible(false);
@@ -65,17 +65,17 @@ export function SearchBar() {
 
     (async () => {
       if (visible) {
-        await currentWindow.setFocus();
-        await currentWindow.center();
+        await searchBarWindow.setFocus();
+        await searchBarWindow.center();
         inputRef.current?.focus();
         await register('Escape', () => setVisible(false));
         cleanupFns.push(() => unregister('Escape'));
         cleanupFns.push(
-          await currentWindow.listen(TauriEvent.WINDOW_BLUR, () => setVisible(false))
+          await searchBarWindow.listen(TauriEvent.WINDOW_BLUR, () => setVisible(false))
         );
       } else {
-        const searchBarSize = await currentWindow.outerSize();
-        currentWindow.setPosition({
+        const searchBarSize = await searchBarWindow.outerSize();
+        searchBarWindow.setPosition({
           type: 'Physical',
           x: -searchBarSize.width,
           y: -searchBarSize.height,
