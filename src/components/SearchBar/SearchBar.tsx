@@ -4,8 +4,8 @@ import { register, unregister } from '@tauri-apps/api/globalShortcut';
 import { getCurrent } from '@tauri-apps/api/window';
 import { listen, TauriEvent } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/api/shell';
-import useConfig from '../../hooks/useConfig';
-import useWindow from '../../hooks/useWindow';
+import useConfig from '@/hooks/useConfig';
+import useWindow from '@/hooks/useWindow';
 
 export default function SearchBar() {
   //#region Hooks
