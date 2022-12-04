@@ -2,7 +2,7 @@ import { window } from '@tauri-apps/api';
 import { WebviewWindow } from '@tauri-apps/api/window';
 import { useCallback, useEffect, useState } from 'react';
 
-export function useWindow(
+export default function useWindow(
   label: string
 ): [window: typeof window, createWindow: typeof createWindow] {
   const [window, setWindow] = useState<WebviewWindow>();

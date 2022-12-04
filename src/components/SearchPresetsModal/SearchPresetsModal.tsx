@@ -1,8 +1,8 @@
 import { invoke } from '@tauri-apps/api';
 import { useEffect, useState } from 'react';
-import { useConfig } from './hooks/config';
+import useConfig from '../../hooks/useConfig';
 
-export function SearchPresetsModal() {
+export default function SearchPresetsModal() {
   const [config, setConfig, isConfigLoading] = useConfig();
 
   useEffect(() => {

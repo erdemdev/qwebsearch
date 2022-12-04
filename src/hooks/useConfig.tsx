@@ -1,10 +1,10 @@
 import { writeTextFile, createDir, readTextFile } from '@tauri-apps/api/fs';
 import { appDir } from '@tauri-apps/api/path';
 import { getVersion } from '@tauri-apps/api/app';
-import defaultConfig from './config.json';
+import defaultConfig from '../default-config.json';
 import { useEffect, useState } from 'react';
 
-export function useConfig(): [
+export default function useConfig(): [
   config: typeof config,
   setConfig: typeof setConfig,
   isConfigLoading: typeof isLoading
