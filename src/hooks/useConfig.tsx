@@ -4,6 +4,8 @@ import { getVersion } from '@tauri-apps/api/app';
 import defaultConfig from '@/default-config.json';
 import { useEffect, useState } from 'react';
 
+// TODO: Convert config into reducer.
+
 export default function useConfig(): [
   config: typeof config,
   setConfig: typeof setConfig,
