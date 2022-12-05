@@ -22,13 +22,25 @@ export default function SearchBar() {
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchBarWindow = useMemo(() => getCurrent(), []);
-  const [searchPresetsWindow, createSearchPresetsWindow] =
-    useWindow('search-presets-modal');
+  const [presetBrowserWindow, createPresetBrowserWindow] = useWindow('preset-browser', {
+    title: 'Preset Browser',
+    width: 500,
+    height: 400,
+    x: 0,
+    y: 0,
+    fullscreen: false,
+    resizable: false,
+    transparent: true,
+    decorations: import.meta.env.DEV,
+    alwaysOnTop: import.meta.env.PROD,
+    skipTaskbar: import.meta.env.PROD,
+    // center: true,
+  });
   //#endregion
 
   //#region Initial Listeners
   useEffect(() => {
-    if (isConfigLoading || searchPresetsWindow) return;
+    if (isConfigLoading || presetBrowserWindow) return;
 
     const cleanupFns: (() => void)[] = [];
 
@@ -54,7 +66,7 @@ export default function SearchBar() {
     }
 
     return cleanup;
-  }, [isConfigLoading, searchPresetsWindow]);
+  }, [isConfigLoading, presetBrowserWindow]);
   //#endregion
 
   //#region Debug Listeners
@@ -62,7 +74,7 @@ export default function SearchBar() {
     if (import.meta.env.DEV) {
       invoke('open_devtools');
 
-      if (import.meta.env.VITE_SHOW_SEARCH_PRESETS_WINDOW) createSearchPresetsWindow();
+      if (import.meta.env.VITE_SHOW_SEARCH_PRESETS_WINDOW) createPresetBrowserWindow();
     }
   }, [isConfigLoading]);
   //#endregion
@@ -137,7 +149,7 @@ export default function SearchBar() {
       <div className="flex w-full overflow-hidden rounded-md border-2 border-gray-300 bg-white shadow-lg">
         <div
           className="box-content w-8 self-center px-4 hover:cursor-pointer"
-          onClick={() => createSearchPresetsWindow()}
+          onClick={() => createPresetBrowserWindow()}
         >
           <img src={preset?.icon['data-uri']} alt="" />
         </div>

@@ -2,7 +2,7 @@ import { invoke } from '@tauri-apps/api';
 import { useEffect, useState } from 'react';
 import useConfig from '@/hooks/useConfig';
 
-export default function SearchPresetsModal() {
+export default function PresetBrowser() {
   const [config, setConfig, isConfigLoading] = useConfig();
 
   useEffect(() => {

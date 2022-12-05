@@ -1,14 +1,14 @@
 import { getCurrent } from '@tauri-apps/api/window';
 import SearchBar from './components/SearchBar';
-import SearchPresetsModal from './components/SearchPresetsModal';
+import PresetBrowser from './components/PresetBrowser';
 
 export default function App() {
   return (() => {
     switch (getCurrent().label) {
       case 'search-bar':
         return <SearchBar />;
-      case 'search-presets-modal':
-        return <SearchPresetsModal />;
+      case 'preset-browser':
+        return <PresetBrowser />;
       default:
         return null;
     }

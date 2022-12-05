@@ -3,24 +3,14 @@ import { WebviewWindow } from '@tauri-apps/api/window';
 import { useCallback, useEffect, useState } from 'react';
 
 export default function useWindow(
-  label: string
+  label: string,
+  windowOptions: window.WindowOptions
 ): [window: typeof window, createWindow: typeof createWindow] {
   const [window, setWindow] = useState<WebviewWindow>();
 
   const createWindow = useCallback(() => {
     const window = new WebviewWindow(label, {
-      title: 'Search Presets Modal',
-      width: 500,
-      height: 400,
-      x: 0,
-      y: 0,
-      fullscreen: false,
-      resizable: false,
-      transparent: true,
-      decorations: import.meta.env.DEV,
-      alwaysOnTop: import.meta.env.PROD,
-      skipTaskbar: import.meta.env.PROD,
-      // center: true,
+      ...windowOptions,
     });
 
     window.once('tauri://created', async () => {
