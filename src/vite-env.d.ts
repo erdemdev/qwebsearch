@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_SHOW_SEARCH_PRESETS_WINDOW: boolean;
+  readonly VITE_NOBLUR_SEARCH_BAR_WINDOW: string;
 }
