@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { register, unregister } from '@tauri-apps/api/globalShortcut';
-import { getCurrent } from '@tauri-apps/api/window';
-import { listen, TauriEvent } from '@tauri-apps/api/event';
+import { useAtom } from 'jotai';
 import { open } from '@tauri-apps/api/shell';
-import useConfig from '@/hooks/useConfig';
+import { appWindow } from '@tauri-apps/api/window';
+import { listen, TauriEvent } from '@tauri-apps/api/event';
+import { windowVisibleAtom } from '@/atom';
 import useWindowSize from '@/hooks/useWindowSize';
+import useConfig from '@/hooks/useConfig';
+import ModalWrapper from '@/components/ModalWrapper';
+import useShortcut from '@/hooks/useShortcut';
 
 export default function SearchBar() {
-  //#region Hooks
-  useWindowSize(700, 65, true);
-  const [config, setConfig, isConfigLoading] = useConfig();
+  const { isWindowSizing } = useWindowSize(700, 65);
+  const [windowVisible, setWindowVisible] = useAtom(windowVisibleAtom);
+  const { config, setConfig, isConfigLoading } = useConfig();
   const defaultPreset = useMemo(
     () =>
       config['search-presets'].collection.find(
@@ -18,75 +21,51 @@ export default function SearchBar() {
       ),
     [config, isConfigLoading]
   );
-  const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState('');
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
-  const searchBarWindow = useMemo(() => getCurrent(), []);
 
-  //#region Initial Listeners
+  // #region Hide on "Escape" key press
+  useShortcut('Escape', () => setWindowVisible(false), []);
+  // #endregion
+
+  // #region Hide window on blur
   useEffect(() => {
-    if (isConfigLoading /* || presetBrowserWindow */) return;
+    const unlistenPromise = appWindow.listen(TauriEvent.WINDOW_BLUR, () =>
+      setWindowVisible(false)
+    );
 
-    const cleanupFns: (() => void)[] = [];
-
-    (async () => {
-      await register('Shift+Space', async () => {
-        if (
-          (await searchBarWindow.outerPosition()).x ===
-          -(await searchBarWindow.outerSize()).width
-        )
-          return setVisible(true);
-        return setVisible(false);
+    return () => {
+      unlistenPromise.then(unlistenFn => {
+        unlistenFn();
       });
-
-      cleanupFns.push(() => unregister('Shift+Space'));
-
-      cleanupFns.push(
-        await listen('tauri://SystemTrayEvent::LeftClick', async () => setVisible(true))
-      );
-    })();
-
-    function cleanup() {
-      cleanupFns.forEach(fn => fn());
-    }
-
-    return cleanup;
-  }, [isConfigLoading /* , presetBrowserWindow */]);
-  //#endregion
-
-  // #region Visibility Listener
-  useEffect(() => {
-    const cleanupFns: (() => void)[] = [];
-
-    (async () => {
-      if (visible) {
-        await searchBarWindow.setFocus();
-        await searchBarWindow.center();
-        inputRef.current?.focus();
-        await register('Escape', () => setVisible(false));
-        cleanupFns.push(() => unregister('Escape'));
-        if (!import.meta.env.VITE_NOBLUR_SEARCH_BAR_WINDOW)
-          cleanupFns.push(
-            await searchBarWindow.listen(TauriEvent.WINDOW_BLUR, () => setVisible(false))
-          );
-      } else {
-        const searchBarSize = await searchBarWindow.outerSize();
-        searchBarWindow.setPosition({
-          type: 'Physical',
-          x: -searchBarSize.width,
-          y: -searchBarSize.height,
-        });
-      }
-    })();
-
-    return function cleanup() {
-      cleanupFns.forEach(fn => fn());
     };
-  }, [visible]);
-  //#endregion
+  }, []);
+  // #endregion
 
-  // #region Shortcode Listener
+  // #region Toggle visibility when toggle shortcut pressed.
+  useEffect(() => {
+    const toggleShortcutPromise = listen('toggle-shortcut', () => {
+      if (windowVisible) return setWindowVisible(false);
+      setWindowVisible(true);
+    });
+
+    return () => {
+      toggleShortcutPromise.then(unlistenFn => unlistenFn());
+    };
+  }, [windowVisible]);
+  // #endregion
+
+  // #region Center and focus if visible
+  useEffect(() => {
+    if (!windowVisible) return;
+
+    appWindow.center();
+    inputRef.current?.focus();
+  }, [isWindowSizing, windowVisible]);
+  // #endregion
+
+  // #region Select search preset on query changge
   useEffect(() => {
     const match = query.match(/^(\w*):/i);
     if (null === match) return setPreset(defaultPreset);
@@ -101,7 +80,7 @@ export default function SearchBar() {
   }, [query]);
   //#endregion
 
-  // #region Open Browser Callback
+  // #region Open browser on form submit
   const openBrowser = useCallback(async () => {
     await open(
       preset?.url.replace(
@@ -113,41 +92,56 @@ export default function SearchBar() {
   //#endregion
 
   // #region Render
+  if (isWindowSizing) return <></>;
+
   return (
-    <form
-      onSubmit={async e => {
-        e.preventDefault();
-        openBrowser();
-        setVisible(false);
-        setQuery('');
-      }}
-      className="flex h-full"
-    >
-      <Link
-        className="box-content w-8 self-center px-4 hover:cursor-pointer"
-        to="/preset-browser"
+    <ModalWrapper>
+      <form
+        onSubmit={async e => {
+          e.preventDefault();
+          setWindowVisible(false);
+          openBrowser();
+          setQuery('');
+        }}
+        className="flex h-full"
       >
-        <img src={preset?.icon['data-uri']} alt="" />
-      </Link>
-      <input
-        ref={inputRef}
-        onChange={e => setQuery(e.currentTarget.value)}
-        autoComplete="off"
-        spellCheck="false"
-        className="text-bold w-full pb-px text-2xl leading-none text-gray-700 outline-none"
-        value={query}
-        placeholder={preset?.placeholder}
-      />
-      <div className="block self-center">
-        <svg
-          className="box-content w-7 fill-gray-400 px-4 text-center"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
+        <div className="relative flex h-full self-center bg-gray-100">
+          <div data-tauri-drag-region className="absolute h-full w-full"></div>
+          <svg
+            className="box-content w-7 fill-gray-400 text-center"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <path fill="none" d="M0 0h24v24H0V0z" />
+            <path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+          </svg>
+        </div>
+        <Link
+          className="box-content w-8 self-center px-4 hover:cursor-pointer"
+          to="modal/preset/preset-browser"
         >
-          <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
-        </svg>
-      </div>
-    </form>
+          <img src={preset?.icon['data-uri']} alt="" />
+        </Link>
+        <input
+          ref={inputRef}
+          onChange={e => setQuery(e.currentTarget.value)}
+          autoComplete="off"
+          spellCheck="false"
+          className="text-bold w-full text-2xl leading-none text-gray-700 outline-none"
+          value={query}
+          placeholder={preset?.placeholder}
+        />
+        <div className="block self-center">
+          <svg
+            className="box-content w-7 fill-gray-400 px-4 text-center"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+          </svg>
+        </div>
+      </form>
+    </ModalWrapper>
   );
   // #endregion
 }
