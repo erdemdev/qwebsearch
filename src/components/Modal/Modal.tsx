@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { useAtom } from 'jotai';
-import { modalCloseLinkAtom } from '@/atom';
+import { atom, useAtom } from 'jotai';
+import { getCurrent } from '@tauri-apps/api/window';
 import ModalWrapper from '@/components/ModalWrapper';
 import useWindowSize from '@/hooks/useWindowSize';
-import { getCurrent } from '@tauri-apps/api/window';
 
-export default function Window() {
-  const { isWindowSizing } = useWindowSize(500, 400);
+export default function Modal() {
+  const { isWindowSizing } = useWindowSize(520, 400);
   const [modalCloseLink] = useAtom(modalCloseLinkAtom);
+  const [modalTitle] = useAtom(modalTitleAtom);
 
   useEffect(() => {
     getCurrent().center();
@@ -18,9 +18,15 @@ export default function Window() {
 
   return (
     <ModalWrapper>
-      <div className="relative flex justify-end bg-gray-100">
+      <div className="relative flex bg-gray-100">
         <div className="absolute h-full w-full" data-tauri-drag-region></div>
-        <Link className="z-10 h-6 w-6 p-1 hover:bg-gray-200" to={modalCloseLink}>
+        <h1 className="ml-2 mt-px flex-grow text-sm font-semibold text-gray-400">
+          {modalTitle}
+        </h1>
+        <Link
+          className="z-10 h-6 w-6 p-1 -outline-offset-1 hover:bg-gray-200"
+          to={modalCloseLink}
+        >
           <svg
             className="fill-gray-400"
             /*  style="enable-background:new 0 0 512 512;" */ version="1.1"
@@ -31,7 +37,38 @@ export default function Window() {
           </svg>
         </Link>
       </div>
-      <Outlet />
+      <div className="p-10">
+        <Outlet />
+      </div>
     </ModalWrapper>
   );
+}
+
+const modalCloseLinkAtom = atom('/');
+const modalTitleAtom = atom('');
+
+export function useModalTitle(newTitle: string) {
+  const [modalTitle, setModalTitle] = useAtom(modalTitleAtom);
+
+  useEffect(() => {
+    const defaultModalTitle = modalTitle;
+    setModalTitle(newTitle);
+
+    return () => {
+      setModalTitle(defaultModalTitle);
+    };
+  }, []);
+}
+
+export function useModalCloseButton(newLink: string) {
+  const [modalCloseLink, setModalCloseLink] = useAtom(modalCloseLinkAtom);
+
+  useEffect(() => {
+    const defaultModalCloseLink = modalCloseLink;
+    setModalCloseLink(newLink);
+
+    return () => {
+      setModalCloseLink(defaultModalCloseLink);
+    };
+  }, []);
 }

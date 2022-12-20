@@ -1,1 +1,1 @@
-export { default } from './Modal';
+export { default, useModalCloseButton, useModalTitle } from './Modal';

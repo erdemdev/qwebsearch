@@ -1,29 +1,31 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAtom } from 'jotai';
 import { open } from '@tauri-apps/api/shell';
 import { appWindow } from '@tauri-apps/api/window';
 import { listen, TauriEvent } from '@tauri-apps/api/event';
-import { windowVisibleAtom } from '@/atom';
+import { windowVisibleAtom } from '@/App';
 import useWindowSize from '@/hooks/useWindowSize';
-import useConfig from '@/hooks/useConfig';
+import { configAtom } from '@/hooks/useConfig';
 import ModalWrapper from '@/components/ModalWrapper';
 import useShortcut from '@/hooks/useShortcut';
 
 export default function SearchBar() {
   const { isWindowSizing } = useWindowSize(700, 65);
   const [windowVisible, setWindowVisible] = useAtom(windowVisibleAtom);
-  const { config, setConfig, isConfigLoading } = useConfig();
+  const [config, setConfig] = useAtom(configAtom);
   const defaultPreset = useMemo(
     () =>
       config['search-presets'].collection.find(
         item => item.id === config['search-presets'].default
       ),
-    [config, isConfigLoading]
+    [config]
   );
   const [query, setQuery] = useState('');
   const [preset, setPreset] = useState(defaultPreset);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setPreset(defaultPreset), [defaultPreset]);
 
   // #region Hide on "Escape" key press
   useShortcut('Escape', () => setWindowVisible(false), []);
@@ -31,6 +33,7 @@ export default function SearchBar() {
 
   // #region Hide window on blur
   useEffect(() => {
+    if (import.meta.env.VITE_SEARCHBAR_NOBLUR) return;
     const unlistenPromise = appWindow.listen(TauriEvent.WINDOW_BLUR, () =>
       setWindowVisible(false)
     );
@@ -67,44 +70,63 @@ export default function SearchBar() {
 
   // #region Select search preset on query changge
   useEffect(() => {
-    const match = query.match(/^(\w*):/i);
+    const match = query.match(/^(\w*)\!?\:/i);
+
     if (null === match) return setPreset(defaultPreset);
 
     const preset = config['search-presets']['collection'].find(
-      // shortcode index is 1. 0 contains shortcode with ":" symbol at the end.
+      // shortcode index is 1. 0 contains shortcode with "!:" symbols at the end.
       preset => preset.shortcode === match[1]
     );
+
     if (undefined === preset) return setPreset(defaultPreset);
 
     setPreset(preset);
   }, [query]);
   //#endregion
 
-  // #region Open browser on form submit
-  const openBrowser = useCallback(async () => {
-    await open(
-      preset?.url.replace(
-        '{{query}}',
-        encodeURIComponent(query.replace(preset.shortcode + ':', '').trimStart())
-      )!
-    );
-  }, [query, preset]);
-  //#endregion
+  // #region Handle form submit event
+  const handleFormSubmit: React.FormEventHandler<HTMLFormElement> = useCallback(
+    e => {
+      e.preventDefault();
+      setWindowVisible(false);
+      setQuery('');
+
+      /**
+       * Open browser after deleting shortcode from query.
+       */
+      open(
+        preset?.url.replace(
+          '{{query}}',
+          encodeURIComponent(query.replace(/^\w*!?\:/, '').trimStart())
+        )!
+      );
+
+      /**
+       * Set preset default if query includes "!" before ":" in shortcode.
+       */
+      if (query.match(/^\w*\!.*\:/i))
+        setConfig(config => {
+          const newConfig = { ...config };
+          newConfig['search-presets'].default = preset!.id;
+          return newConfig;
+        });
+    },
+    [query, preset]
+  );
+  // #endregion
+
+  // #region Handle search query change event
+  const handleQueryChange: React.ChangeEventHandler<HTMLInputElement> = e =>
+    setQuery(e.currentTarget.value);
+  // #endregion
 
   // #region Render
   if (isWindowSizing) return <></>;
 
   return (
     <ModalWrapper>
-      <form
-        onSubmit={async e => {
-          e.preventDefault();
-          setWindowVisible(false);
-          openBrowser();
-          setQuery('');
-        }}
-        className="flex h-full"
-      >
+      <form onSubmit={handleFormSubmit} className="flex h-full">
         <div className="relative flex h-full self-center bg-gray-100">
           <div data-tauri-drag-region className="absolute h-full w-full"></div>
           <svg
@@ -117,14 +139,14 @@ export default function SearchBar() {
           </svg>
         </div>
         <Link
-          className="box-content w-8 self-center px-4 hover:cursor-pointer"
-          to="modal/preset/preset-browser"
+          className="box-content flex h-full w-8 items-center px-4 -outline-offset-1  hover:cursor-pointer"
+          to="modal/preset-browser"
         >
           <img src={preset?.icon['data-uri']} alt="" />
         </Link>
         <input
           ref={inputRef}
-          onChange={e => setQuery(e.currentTarget.value)}
+          onChange={handleQueryChange}
           autoComplete="off"
           spellCheck="false"
           className="text-bold w-full text-2xl leading-none text-gray-700 outline-none"

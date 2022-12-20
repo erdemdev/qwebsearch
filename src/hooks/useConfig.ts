@@ -1,11 +1,14 @@
 import { writeTextFile, createDir, readTextFile } from '@tauri-apps/api/fs';
 import { appDir } from '@tauri-apps/api/path';
 import { getVersion } from '@tauri-apps/api/app';
-import defaultConfig from '@/default-config.json';
 import { useEffect, useState } from 'react';
+import { atom, useAtom } from 'jotai';
+import defaultConfig from '@/default-config.json';
+
+export const configAtom = atom(defaultConfig);
 
 export default function useConfig() {
-  const [config, setConfig] = useState(defaultConfig);
+  const [config, setConfig] = useAtom(configAtom);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -37,5 +40,13 @@ export default function useConfig() {
     })();
   }, []);
 
-  return { config, setConfig, isConfigLoading: isLoading };
+  useEffect(() => {
+    if (isLoading) return;
+    (async () => {
+      await writeTextFile((await appDir()) + '/config.json', JSON.stringify(config));
+      if (import.meta.env.DEV) console.log('Config wrote to dist.');
+    })();
+  }, [config, isLoading]);
+
+  return isLoading;
 }
