@@ -3,6 +3,7 @@ import { configAtom } from '@/hooks/useConfig';
 import { useModalTitle, useModalCloseButton } from '@/components/Modal';
 import { useAtom } from 'jotai';
 import useShortcut from '@/hooks/useShortcut';
+import { useEffect } from 'react';
 
 export default function PresetBrowser(props: OutletProps) {
   const [config, setConfig] = useAtom(configAtom);
@@ -31,6 +32,7 @@ export default function PresetBrowser(props: OutletProps) {
       <div className="my-5 grid grid-cols-4 gap-2">
         {config['search-presets']['collection'].map((preset, index) => (
           <button
+            {...(0 === index ? { autoFocus: true } : {})}
             key={index}
             className="relative flex flex-col overflow-hidden rounded-md border-2 border-gray-300 px-2 "
             onClick={() => {
