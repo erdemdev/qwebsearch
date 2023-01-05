@@ -5,13 +5,10 @@ export default function useWindowSize(width: number, height: number) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const currentWindow = getCurrent();
-
-    (async () => {
-      await currentWindow.setSize(new LogicalSize(width, height));
-      setIsLoading(false);
-    })();
+    getCurrent()
+      .setSize(new LogicalSize(width, height))
+      .then(() => setIsLoading(false));
   }, []);
 
-  return { isWindowSizing: isLoading };
+  return isLoading;
 }

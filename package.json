@@ -12,10 +12,12 @@
     "tauri:build-debug": "tauri build --debug"
   },
   "dependencies": {
+    "@imagemagick/magick-wasm": "^0.0.18",
     "@tauri-apps/api": "^1.1.0",
     "jotai": "^1.11.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.41.1",
     "react-router-dom": "^6.4.4"
   },
   "devDependencies": {

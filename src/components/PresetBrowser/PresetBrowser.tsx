@@ -5,6 +5,8 @@ import { useAtom } from 'jotai';
 import useShortcut from '@/hooks/useShortcut';
 import { useEffect } from 'react';
 
+console.log('Preset Browser imported!');
+
 export default function PresetBrowser(props: OutletProps) {
   const [config, setConfig] = useAtom(configAtom);
   const navigate = useNavigate();
@@ -14,9 +16,9 @@ export default function PresetBrowser(props: OutletProps) {
 
   return (
     <>
-      <div className="flex">
+      <div className="sticky top-0 z-10 flex bg-white py-4">
         <input
-          className=" flex-grow rounded-l-md border-y-2 border-l-2 border-gray-300 pl-4 pr-6 -outline-offset-1"
+          className=" rounded-ou flex-grow rounded-l-md border-y-2 border-l-2 border-gray-300 pl-4 pr-6 outline-none focus:border-gray-900"
           type="text"
           name="filter"
           id="filter"
@@ -29,7 +31,8 @@ export default function PresetBrowser(props: OutletProps) {
           New Preset
         </Link>
       </div>
-      <div className="my-5 grid grid-cols-4 gap-2">
+
+      <div className="grid grid-cols-4 gap-2">
         {config['search-presets']['collection'].map((preset, index) => (
           <button
             {...(0 === index ? { autoFocus: true } : {})}
@@ -50,7 +53,7 @@ export default function PresetBrowser(props: OutletProps) {
               alt=""
             />
             <p className="h-6 overflow-clip font-mono">{preset.shortcode}</p>
-            <img className="my-2 mx-auto block" src={preset.icon['data-uri']} alt="" />
+            <img className="my-3 mx-auto block" src={preset.icon['data-uri']} alt="" />
             <p className="h-6 w-full truncate text-left text-sm">{preset.label}</p>
           </button>
         ))}

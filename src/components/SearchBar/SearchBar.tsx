@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAtom } from 'jotai';
 import { open } from '@tauri-apps/api/shell';
@@ -11,7 +11,7 @@ import ModalWrapper from '@/components/ModalWrapper';
 import useShortcut from '@/hooks/useShortcut';
 
 export default function SearchBar() {
-  const { isWindowSizing } = useWindowSize(700, 65);
+  const isWindowSizing = useWindowSize(700, 65);
   const [windowVisible, setWindowVisible] = useAtom(windowVisibleAtom);
   const [config, setConfig] = useAtom(configAtom);
   const defaultPreset = useMemo(
@@ -31,6 +31,19 @@ export default function SearchBar() {
   useShortcut('Escape', () => setWindowVisible(false), []);
   // #endregion
 
+  // #region Toggle visibility when toggle shortcut pressed.
+  useEffect(() => {
+    const toggleShortcutPromise = listen('toggle-shortcut', () => {
+      if (windowVisible) return setWindowVisible(false);
+      setWindowVisible(true);
+    });
+
+    return () => {
+      toggleShortcutPromise.then(unlistenFn => unlistenFn());
+    };
+  }, [windowVisible]);
+  // #endregion
+
   // #region Hide window on blur
   useEffect(() => {
     if (import.meta.env.VITE_SEARCHBAR_NOBLUR) return;
@@ -44,19 +57,6 @@ export default function SearchBar() {
       });
     };
   }, []);
-  // #endregion
-
-  // #region Toggle visibility when toggle shortcut pressed.
-  useEffect(() => {
-    const toggleShortcutPromise = listen('toggle-shortcut', () => {
-      if (windowVisible) return setWindowVisible(false);
-      setWindowVisible(true);
-    });
-
-    return () => {
-      toggleShortcutPromise.then(unlistenFn => unlistenFn());
-    };
-  }, [windowVisible]);
   // #endregion
 
   // #region Center and focus if visible
@@ -122,6 +122,7 @@ export default function SearchBar() {
   // #endregion
 
   // #region Render
+  if (false === windowVisible) return <></>;
   if (isWindowSizing) return <></>;
 
   return (

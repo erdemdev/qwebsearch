@@ -5,8 +5,10 @@ import { getCurrent } from '@tauri-apps/api/window';
 import ModalWrapper from '@/components/ModalWrapper';
 import useWindowSize from '@/hooks/useWindowSize';
 
+console.log('Modal imported!');
+
 export default function Modal() {
-  const { isWindowSizing } = useWindowSize(520, 400);
+  const isWindowSizing = useWindowSize(520, 400);
   const [modalCloseLink] = useAtom(modalCloseLinkAtom);
   const [modalTitle] = useAtom(modalTitleAtom);
 
@@ -37,8 +39,9 @@ export default function Modal() {
           </svg>
         </Link>
       </div>
-      <div className="p-10">
+      <div className="relative min-w-full flex-grow overflow-x-hidden overflow-y-scroll px-5">
         <Outlet />
+        {/* <div className="sticky bottom-0 z-10 block h-6 w-full bg-white"></div> */}
       </div>
     </ModalWrapper>
   );
