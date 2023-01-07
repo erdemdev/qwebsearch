@@ -67,7 +67,8 @@
         "transparent": true,
         "decorations": false,
         "alwaysOnTop": true,
-        "skipTaskbar": true
+        "skipTaskbar": true,
+        "fileDropEnabled": true
       }
     ],
     "systemTray": {

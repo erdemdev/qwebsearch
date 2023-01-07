@@ -5,8 +5,6 @@ import { getCurrent } from '@tauri-apps/api/window';
 import ModalWrapper from '@/components/ModalWrapper';
 import useWindowSize from '@/hooks/useWindowSize';
 
-console.log('Modal imported!');
-
 export default function Modal() {
   const isWindowSizing = useWindowSize(520, 400);
   const [modalCloseLink] = useAtom(modalCloseLinkAtom);

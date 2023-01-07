@@ -3,9 +3,6 @@ import { configAtom } from '@/hooks/useConfig';
 import { useModalTitle, useModalCloseButton } from '@/components/Modal';
 import { useAtom } from 'jotai';
 import useShortcut from '@/hooks/useShortcut';
-import { useEffect } from 'react';
-
-console.log('Preset Browser imported!');
 
 export default function PresetBrowser(props: OutletProps) {
   const [config, setConfig] = useAtom(configAtom);

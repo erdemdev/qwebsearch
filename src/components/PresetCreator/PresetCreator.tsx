@@ -1,24 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useModalCloseButton, useModalTitle } from '@/components/Modal';
 import useShortcut from '@/hooks/useShortcut';
 import { SubmitHandler } from 'react-hook-form/dist/types';
-import { Dropzone } from './Dropzone';
-import {
-  initializeImageMagick,
-  ImageMagick,
-  MagickGeometry,
-} from '@imagemagick/magick-wasm';
-
-console.log('Preset Creator imported!');
+import Dropzone from '../Dropzone';
+import { Event, listen } from '@tauri-apps/api/event';
+import { fs } from '@tauri-apps/api';
+import { useAtom } from 'jotai';
+import { configAtom } from '@/hooks/useConfig';
 
 type FormValues = {
   label: string;
   placeholder: string;
   url: string;
   shortcode: string;
-  icon: string;
+  icon: {
+    'data-uri': string;
+  };
 };
 
 export default function PresetCreator() {
@@ -26,7 +25,6 @@ export default function PresetCreator() {
   useShortcut('Escape', () => navigate('../preset-browser'), []);
   useModalCloseButton('/');
   useModalTitle('Create a new preset');
-  const [loadingImageMagick, setLoadingImageMagick] = useState(false);
   const {
     register,
     handleSubmit,
@@ -34,20 +32,44 @@ export default function PresetCreator() {
     watch,
     formState: { errors },
   } = useForm<FormValues>();
+  const [config, setConfig] = useAtom(configAtom);
 
+  // TODO: Detect file type and restrict to small jpeg & png files.
+  //#region Drag and Drop listener
   useEffect(() => {
-    initializeImageMagick().then(() => setLoadingImageMagick(false));
+    const unListenPromise = listen(
+      'tauri://file-drop',
+      async (event: Event<string[]>) => {
+        const data = await fs.readBinaryFile(event.payload[0]);
+        console.log(data);
+      }
+    );
+
+    return () => {
+      unListenPromise.then(unListenFn => unListenFn());
+    };
   }, []);
+  //#endregion
 
   const onSubmit: SubmitHandler<FormValues> = data => {
-    console.log(data);
+    setConfig(config => {
+      const newConfig = { ...config };
+      newConfig['search-presets'].collection.push({ id: Date.now().toString(), ...data });
+      return newConfig;
+    });
+
+    navigate('../preset-browser');
   };
 
   const handleIconChange: React.ChangeEventHandler<HTMLInputElement> = async e => {
     try {
-      if (!e.target.files?.length) throw new Error('Image file for icon not found.');
+      if (!e.target.files?.length) throw new Error('Icon field is empty.');
 
-      if (loadingImageMagick) throw new Error('ImageMagick is still loading.');
+      const { initializeImageMagick, MagickGeometry, ImageMagick } = await import(
+        '@imagemagick/magick-wasm'
+      );
+
+      await initializeImageMagick();
 
       const imageType = e.target.files[0].type;
       const imageGeometry = new MagickGeometry(32, 32);
@@ -58,18 +80,21 @@ export default function PresetCreator() {
         image.write(data => {
           const reader = new FileReader();
           reader.onload = e => {
-            if (e.target?.result) setValue('icon', e.target.result.toString());
+            if (!e.target?.result) throw new Error('FileReader throwed an error!');
+            setValue('icon.data-uri', e.target.result.toString());
           };
           reader.readAsDataURL(new Blob([data], { type: imageType }));
         });
       });
     } catch (error) {
-      if (import.meta.env.DEV) console.error(error);
+      if (import.meta.env.DEV) console.warn(error);
 
-      setValue('icon', '');
+      setValue('icon.data-uri', '');
     }
   };
 
+  // TODO: Insert error messages.
+  // TODO: Validate input with zod.
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -117,14 +142,15 @@ export default function PresetCreator() {
             Icon
           </label>
           <div className="col-span-3">
-            <input
-              type="file"
-              accept="image/png, image/jpeg"
-              id="iconPreview"
+            <Dropzone
+              // TODO: Style dropzone element.
+              id={'iconPreview'}
+              // TODO: Change text in dropzone element when preview prop is entered.
+              preview={watch('icon.data-uri')}
               onChange={handleIconChange}
+              accept="image/png, image/jpeg"
             />
-            <img src={watch('icon')} alt="test" />
-            <input type="hidden" {...register('icon')} />
+            <input type="hidden" {...register('icon.data-uri')} />
           </div>
         </div>
         <div className="sticky bottom-0 z-10 flex items-center bg-white py-3">
