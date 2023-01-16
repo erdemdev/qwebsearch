@@ -31,28 +31,35 @@ export default function PresetBrowser(props: OutletProps) {
 
       <div className="grid grid-cols-4 gap-2">
         {config['search-presets']['collection'].map((preset, index) => (
-          <button
-            {...(0 === index ? { autoFocus: true } : {})}
-            key={index}
-            className="relative flex flex-col overflow-hidden rounded-md border-2 border-gray-300 px-2 "
-            onClick={() => {
-              setConfig(config => {
-                const newConfig = { ...config };
-                newConfig['search-presets'].default = preset.id;
-                return newConfig;
-              });
-              navigate('/');
-            }}
-          >
-            <img
-              className="absolute bottom-16 h-full w-full blur-2xl"
-              src={preset.icon['data-uri']}
-              alt=""
-            />
-            <p className="h-6 overflow-clip font-mono">{preset.shortcode}</p>
-            <img className="my-3 mx-auto block" src={preset.icon['data-uri']} alt="" />
-            <p className="h-6 w-full truncate text-left text-sm">{preset.label}</p>
-          </button>
+          <div key={index} className="group relative rounded-md border-2 border-gray-300">
+            <button
+              {...(0 === index ? { autoFocus: true } : {})}
+              className="relative flex w-full flex-col overflow-hidden px-2"
+              onClick={() => {
+                setConfig(config => {
+                  const newConfig = { ...config };
+                  newConfig['search-presets'].default = preset.id;
+                  return newConfig;
+                });
+                navigate('/');
+              }}
+            >
+              <img
+                className="absolute bottom-16 h-full w-full blur-2xl"
+                src={preset.icon['data-uri']}
+                alt=""
+              />
+              <p className="z-10 h-6 overflow-clip font-mono">{preset.shortcode}</p>
+              <img className="my-3 mx-auto block" src={preset.icon['data-uri']} alt="" />
+              <p className="z-10 h-6 w-full truncate text-left text-sm">{preset.label}</p>
+            </button>
+            <Link
+              className="bg-yellow invisible absolute top-0 right-0 px-1 group-hover:visible"
+              to={'../preset-creator' + '?id=' + preset.id}
+            >
+              edit
+            </Link>
+          </div>
         ))}
       </div>
     </>

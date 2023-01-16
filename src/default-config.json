@@ -8,10 +8,10 @@
     "placeholder-icon": {
       "data-uri": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAABMElEQVRYhe2QMUtCURiGn8/rvWaD/8Q1jBpqixpM3RvamsJfkD8hmtpa2sRzNGhqaHIMgqCtISjaIwiVe76WXAKvXq8ZwXngTN/3ve/DAc8fI9MWhrVaE5E6IsVUyaqfQCcy5nRugUGjsS+qNlXxDxxUV4y5mjTPJV6rrmUpBxCoJM2TBUSS5zMZJGdkL8iIF/ACXsALeAEv8O8Fbr/f8gVEpB2WSrthEOygejlvTn7O9rN8udyUVssBKBwM6/UngZO0UWl/IEb1KOp0jsflAAJaMKaF6iEw+i2BjxxUI2vPJy1E1l6I6h6q7wsVUHjDua28MdfTdkNrb9S5TYGXxQioPjpYj7rdu1kCAQq93sMoCCqI3GcSUOiHqhtFY55nLR+z2m6/hnG8rdBPe+tZKl8OLltl6NEDjwAAAABJRU5ErkJggg=="
     },
-    "default": "ef2dccb2-f1a8-4caa-ac51-87e638b667ac",
+    "default": "1673468004",
     "collection": [
       {
-        "id": "ef2dccb2-f1a8-4caa-ac51-87e638b667ac",
+        "id": "1673468004",
         "label": "Google",
         "placeholder": "Google Search",
         "url": "https://google.com/search?q={{query}}",
@@ -21,7 +21,7 @@
         }
       },
       {
-        "id": "e1c8e5c2-75fa-4c38-ac76-11c5b91647e3",
+        "id": "1673467997",
         "label": "YouTube",
         "placeholder": "Search for YouTube",
         "url": "https://www.youtube.com/results?search_query={{query}}",
@@ -31,7 +31,7 @@
         }
       },
       {
-        "id": "e3d0c246-65ee-4cfc-aa09-14080294485a",
+        "id": "1673468012",
         "label": "Google Translate (ENG/TUR)",
         "placeholder": "English to Turkish translation",
         "url": "https://translate.google.com.tr/?hl=tr&tab=rT&sl=en&tl=tr&text={{query}}&op=translate",
