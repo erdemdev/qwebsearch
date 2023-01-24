@@ -3,6 +3,27 @@ import { configAtom } from '@/hooks/useConfig';
 import { useModalTitle, useModalCloseButton } from '@/components/Modal';
 import { useAtom } from 'jotai';
 import useShortcut from '@/hooks/useShortcut';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  UniqueIdentifier,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { SortablePresetItem } from './SortablePresetItem';
+import { PresetItem } from './PresetItem';
+import { useState } from 'react';
 
 export default function PresetBrowser(props: OutletProps) {
   const [config, setConfig] = useAtom(configAtom);
@@ -10,6 +31,13 @@ export default function PresetBrowser(props: OutletProps) {
   useShortcut('Escape', () => navigate('/'), []);
   useModalCloseButton('/');
   useModalTitle('Select a preset');
+  const [activePresetId, setActivePresetId] = useState<UniqueIdentifier>();
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   return (
     <>
@@ -28,40 +56,78 @@ export default function PresetBrowser(props: OutletProps) {
           New Preset
         </Link>
       </div>
-
-      <div className="grid grid-cols-4 gap-2">
-        {config['search-presets']['collection'].map((preset, index) => (
-          <div key={index} className="group relative rounded-md border-2 border-gray-300">
-            <button
-              {...(0 === index ? { autoFocus: true } : {})}
-              className="relative flex w-full flex-col overflow-hidden px-2"
-              onClick={() => {
-                setConfig(config => {
-                  const newConfig = { ...config };
-                  newConfig['search-presets'].default = preset.id;
-                  return newConfig;
-                });
-                navigate('/');
-              }}
-            >
-              <img
-                className="absolute bottom-16 h-full w-full blur-2xl"
-                src={preset.icon['data-uri']}
-                alt=""
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={config['search-presets'].collection}
+          strategy={rectSortingStrategy}
+        >
+          <div className="grid grid-cols-4 gap-2">
+            {config['search-presets']['collection'].map(preset => (
+              <SortablePresetItem
+                key={preset.id}
+                preset={preset}
+                onClick={handlePresetOnClick(preset.id)}
+                isActive={activePresetId === preset.id}
               />
-              <p className="z-10 h-6 overflow-clip font-mono">{preset.shortcode}</p>
-              <img className="my-3 mx-auto block" src={preset.icon['data-uri']} alt="" />
-              <p className="z-10 h-6 w-full truncate text-left text-sm">{preset.label}</p>
-            </button>
-            <Link
-              className="bg-yellow invisible absolute top-0 right-0 px-1 group-hover:visible"
-              to={'../preset-creator' + '?id=' + preset.id}
-            >
-              edit
-            </Link>
+            ))}
           </div>
-        ))}
-      </div>
+        </SortableContext>
+        <DragOverlay>
+          {activePresetId ? (
+            <PresetItem
+              preset={
+                config['search-presets'].collection.find(
+                  item => item.id === activePresetId
+                ) || config['search-presets'].collection[0]
+              }
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </>
   );
+
+  function handlePresetOnClick(presetId: string) {
+    return () => {
+      setConfig(config => {
+        const newConfig = { ...config };
+        newConfig['search-presets'].default = presetId;
+        return newConfig;
+      });
+      navigate('/');
+    };
+  }
+
+  function handleDragStart({ active }: DragStartEvent) {
+    setActivePresetId(active.id);
+  }
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    if (!over) return;
+
+    if (active.id !== over.id) {
+      setConfig(config => {
+        const searchPresets = config['search-presets'].collection;
+        const presetIds = searchPresets.map(preset => preset.id);
+        const oldIndex = presetIds.indexOf(String(active.id));
+        const newIndex = presetIds.indexOf(String(over.id));
+
+        const newConfig = { ...config };
+        newConfig['search-presets'].collection = arrayMove(
+          searchPresets,
+          oldIndex,
+          newIndex
+        );
+
+        return newConfig;
+      });
+    }
+
+    setActivePresetId(undefined);
+  }
 }
