@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { MouseEventHandler } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type defaultConfig from '@/default-config.json';
 import { PresetItem } from './PresetItem';
 
 export const SortablePresetItem: React.FC<{
-  onClick: () => void;
+  onClick: MouseEventHandler<HTMLButtonElement>;
   preset: typeof defaultConfig['search-presets']['collection'][0];
   hidden?: boolean;
 }> = props => {

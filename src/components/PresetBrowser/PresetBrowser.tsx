@@ -93,7 +93,9 @@ export default function PresetBrowser(props: OutletProps) {
     </>
   );
 
-  function handlePresetOnClick(presetId: string) {
+  function handlePresetOnClick(
+    presetId: string
+  ): React.MouseEventHandler<HTMLButtonElement> {
     return () => {
       setConfig(config => {
         const newConfig = { ...config };
