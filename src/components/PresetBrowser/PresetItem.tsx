@@ -12,7 +12,8 @@ export const PresetItem = React.forwardRef<
     style?: CSSProperties;
     attributes?: DraggableAttributes;
     listeners?: SyntheticListenerMap;
-    isActive?: boolean;
+    hidden?: boolean;
+    dropShadow?: boolean;
   }
 >((props, ref) => (
   <div
@@ -20,8 +21,8 @@ export const PresetItem = React.forwardRef<
     style={props.style}
     {...props.attributes}
     className={`group relative rounded-md border-2 border-gray-300 bg-white ${
-      props.isActive ? 'opacity-40' : ''
-    }`}
+      props.hidden ? 'invisible' : ''
+    } ${props.dropShadow ? 'shadow-xl' : ''}`}
   >
     <button
       /* {...(0 === props.index

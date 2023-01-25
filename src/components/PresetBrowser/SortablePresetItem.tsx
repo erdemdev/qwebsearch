@@ -7,7 +7,7 @@ import { PresetItem } from './PresetItem';
 export const SortablePresetItem: React.FC<{
   onClick: () => void;
   preset: typeof defaultConfig['search-presets']['collection'][0];
-  isActive?: boolean;
+  hidden?: boolean;
 }> = props => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: props.preset.id,
@@ -26,7 +26,7 @@ export const SortablePresetItem: React.FC<{
       style={style}
       onClick={props.onClick}
       preset={props.preset}
-      isActive={props.isActive}
+      hidden={props.hidden}
     />
   );
 };

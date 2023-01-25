@@ -72,7 +72,7 @@ export default function PresetBrowser(props: OutletProps) {
                 key={preset.id}
                 preset={preset}
                 onClick={handlePresetOnClick(preset.id)}
-                isActive={activePresetId === preset.id}
+                hidden={activePresetId === preset.id}
               />
             ))}
           </div>
@@ -85,6 +85,7 @@ export default function PresetBrowser(props: OutletProps) {
                   item => item.id === activePresetId
                 ) || config['search-presets'].collection[0]
               }
+              dropShadow
             />
           ) : null}
         </DragOverlay>
