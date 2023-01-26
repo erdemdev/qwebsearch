@@ -41,21 +41,6 @@ export default function PresetBrowser(props: OutletProps) {
 
   return (
     <>
-      <div className="sticky top-0 z-10 flex bg-white py-4">
-        <input
-          className=" rounded-ou flex-grow rounded-l-md border-y-2 border-l-2 border-gray-300 pl-4 pr-6 outline-none focus:border-gray-900"
-          type="text"
-          name="filter"
-          id="filter"
-          placeholder="Search for presets"
-        />
-        <Link
-          to="../preset-creator"
-          className="rounded-r-md bg-blue-600 py-2 pr-6 pl-5 font-semibold text-white -outline-offset-1  hover:bg-blue-500"
-        >
-          New Preset
-        </Link>
-      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -66,7 +51,7 @@ export default function PresetBrowser(props: OutletProps) {
           items={config['search-presets'].collection}
           strategy={rectSortingStrategy}
         >
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-2 pb-10 pt-4">
             {config['search-presets']['collection'].map(preset => (
               <SortablePresetItem
                 key={preset.id}
@@ -90,6 +75,13 @@ export default function PresetBrowser(props: OutletProps) {
           ) : null}
         </DragOverlay>
       </DndContext>
+      <div className="sticky bottom-0 z-40 h-20 bg-gradient-to-t from-white"></div>
+      <Link
+        to="../preset-creator"
+        className="fixed bottom-9 right-11 z-40 ml-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 align-middle shadow-xl -outline-offset-1 hover:bg-blue-500"
+      >
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACMAAAAjCAYAAAAe2bNZAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAaElEQVR4nO3XsQnAMAxEUe0/hXfwTtrCXAhKK1CKEBn/B8aNiuMwApsBaELSkDTvu0MYV/C/sxhhMjSToZnMec0oNqsXznrCrOL8+02tWPFfmHs3U3XeA64iTIZmMjSzSzOjze8AgIULPkr21EcDduAAAAAASUVORK5CYII=" />
+      </Link>
     </>
   );
 

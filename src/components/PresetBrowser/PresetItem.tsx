@@ -25,26 +25,26 @@ export const PresetItem = React.forwardRef<
     } ${props.dropShadow ? 'shadow-xl' : ''}`}
   >
     <div className="relative flex w-full flex-col overflow-hidden">
-      <button onClick={props.onClick} className="absolute h-full w-full"></button>
+      <button onClick={props.onClick} className="absolute z-20 h-full w-full"></button>
       <img
         className="absolute bottom-16 h-full w-full blur-2xl"
         src={props.preset.icon['data-uri']}
         alt=""
       />
-      <div className="z-10 flex ">
-        <p className="h-6 flex-grow truncate pl-2 text-left font-mono">
+      <div className="flex">
+        <p className="z-10 h-6 flex-grow truncate pl-2 text-left font-mono">
           {props.preset.shortcode}
         </p>
         <div
           {...props.listeners}
-          className="invisible w-0 group-hover:visible group-hover:w-auto"
+          className="invisible z-20 w-0 group-hover:visible group-hover:w-auto"
         >
           <svg
             version="1.1"
             width="23"
             height="23"
             viewBox="0 0 30 30"
-            className="z-20 -rotate-90 cursor-move opacity-60"
+            className="z-20 -rotate-90 cursor-move opacity-40"
           >
             <title>drag-handle-corner-line</title>
             <circle cx="12" cy="24" r="1.5"></circle>
@@ -57,11 +57,13 @@ export const PresetItem = React.forwardRef<
         </div>
       </div>
       <img className="my-3 mx-auto block" src={props.preset.icon['data-uri']} alt="" />
-      <div className="z-10 flex">
-        <p className="h-6 w-full truncate pl-2 text-left text-sm">{props.preset.label}</p>
+      <div className="flex">
+        <p className="z-10 h-6 w-full truncate pl-2 text-left text-sm">
+          {props.preset.label}
+        </p>
         <Link
           to={'../preset-creator' + '?id=' + props.preset.id}
-          className="invisible relative h-6 w-0 pr-1 group-hover:visible group-hover:w-auto"
+          className="invisible relative z-20 h-6 w-0 pr-1 group-hover:visible group-hover:w-auto"
         >
           <svg
             width="20"
