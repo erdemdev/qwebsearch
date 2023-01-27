@@ -4,12 +4,12 @@ import { useForm } from 'react-hook-form';
 import { useModalCloseButton, useModalTitle } from '@/components/Modal';
 import useShortcut from '@/hooks/useShortcut';
 import { SubmitHandler } from 'react-hook-form/dist/types';
-import Dropzone from '../Dropzone';
 import { Event, listen } from '@tauri-apps/api/event';
 import { fs } from '@tauri-apps/api';
 import { confirm } from '@tauri-apps/api/dialog';
 import { useAtom } from 'jotai';
 import { configAtom } from '@/hooks/useConfig';
+import Dropzone from '../Dropzone';
 
 type FormValues = {
   id: string;
@@ -37,8 +37,9 @@ export default function PresetCreator() {
   const [config, setConfig] = useAtom(configAtom);
   const [searchParams] = useSearchParams();
 
-  useShortcut('Escape', () => returnToPresetBrowser, []);
+  useShortcut('Escape', () => returnToPresetBrowser(), []);
 
+  // TODO: Drag and Drop Listener is not finished yet.
   useEffect(function registerDragAndDropListener() {
     const unListenPromise = listen(
       'tauri://file-drop',
@@ -53,7 +54,7 @@ export default function PresetCreator() {
     };
   }, []);
 
-  useEffect(function switchToEditMode() {
+  useEffect(function fillFormFieldsInEditMode() {
     const presetId = searchParams.get('id');
 
     if (null === presetId) return;
@@ -135,20 +136,19 @@ export default function PresetCreator() {
           >
             Cancel
           </Link>
-          {searchParams.get('id') ? (
-            <button
-              onClick={handlePresetDelete()}
-              className="inline-block rounded-md bg-red-200 py-2 px-6 font-semibold  text-red-900 hover:bg-red-300"
-            >
-              Delete
+          <div className="flex flex-row-reverse gap-3">
+            <button className="inline-block rounded-md bg-blue-600 py-2 px-6 font-semibold text-white hover:bg-blue-500">
+              Confirm
             </button>
-          ) : null}
-          <button
-            type="submit"
-            className="ml-3 inline-block rounded-md bg-blue-600 py-2 px-6 font-semibold text-white hover:bg-blue-500"
-          >
-            Confirm
-          </button>
+            {searchParams.get('id') ? (
+              <button
+                onClick={handlePresetDelete()}
+                className="inline-block rounded-md bg-red-200 py-2 px-6 font-semibold  text-red-900 hover:bg-red-300"
+              >
+                Delete
+              </button>
+            ) : null}
+          </div>
         </div>
       </form>
     </>

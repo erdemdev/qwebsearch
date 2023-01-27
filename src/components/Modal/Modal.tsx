@@ -25,6 +25,7 @@ export default function Modal() {
         </h1>
         <Link
           className="z-10 h-6 w-6 p-1 -outline-offset-1 hover:bg-gray-200"
+          tabIndex={-1}
           to={modalCloseLink}
         >
           <svg

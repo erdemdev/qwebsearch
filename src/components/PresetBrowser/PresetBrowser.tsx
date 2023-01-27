@@ -58,6 +58,7 @@ export default function PresetBrowser(props: OutletProps) {
                 preset={preset}
                 onClick={handlePresetOnClick(preset.id)}
                 hidden={activePresetId === preset.id}
+                autoFocus={config['search-presets'].default === preset.id}
               />
             ))}
           </div>
@@ -77,6 +78,7 @@ export default function PresetBrowser(props: OutletProps) {
       </DndContext>
       <div className="sticky bottom-0 z-40 h-20 bg-gradient-to-t from-white"></div>
       <Link
+        tabIndex={-1}
         to="../preset-creator"
         className="fixed bottom-9 right-11 z-40 ml-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 align-middle shadow-xl -outline-offset-1 hover:bg-blue-500"
       >

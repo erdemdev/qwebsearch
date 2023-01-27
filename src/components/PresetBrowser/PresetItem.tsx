@@ -14,18 +14,22 @@ export const PresetItem = React.forwardRef<
     listeners?: SyntheticListenerMap;
     hidden?: boolean;
     dropShadow?: boolean;
+    autoFocus?: boolean;
   }
 >((props, ref) => (
   <div
     ref={ref}
     style={props.style}
-    {...props.attributes}
-    className={`group relative block rounded-md border-2 border-gray-300 bg-white ${
+    className={`group relative block rounded-md border-2 border-gray-300 bg-white outline-none ${
       props.hidden ? 'invisible' : ''
     } ${props.dropShadow ? 'shadow-xl' : ''}`}
   >
+    <button
+      onClick={props.onClick}
+      className="absolute z-20 h-full w-full outline-offset-1"
+      autoFocus={props.autoFocus}
+    ></button>
     <div className="relative flex w-full flex-col overflow-hidden">
-      <button onClick={props.onClick} className="absolute z-20 h-full w-full"></button>
       <img
         className="absolute bottom-16 h-full w-full blur-2xl"
         src={props.preset.icon['data-uri']}
@@ -35,8 +39,9 @@ export const PresetItem = React.forwardRef<
         <p className="z-10 h-6 flex-grow truncate pl-2 text-left font-mono">
           {props.preset.shortcode}
         </p>
-        <div
+        <button
           {...props.listeners}
+          {...props.attributes}
           className="invisible z-20 w-0 group-hover:visible group-hover:w-auto"
         >
           <svg
@@ -54,7 +59,7 @@ export const PresetItem = React.forwardRef<
             <circle cx="24" cy="24" r="1.5"></circle>
             <circle cx="24" cy="18" r="1.5"></circle>
           </svg>
-        </div>
+        </button>
       </div>
       <img className="my-3 mx-auto block" src={props.preset.icon['data-uri']} alt="" />
       <div className="flex">

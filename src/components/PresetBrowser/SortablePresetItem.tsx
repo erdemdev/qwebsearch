@@ -8,6 +8,7 @@ export const SortablePresetItem: React.FC<{
   onClick: MouseEventHandler<HTMLButtonElement>;
   preset: typeof defaultConfig['search-presets']['collection'][0];
   hidden?: boolean;
+  autoFocus?: boolean;
 }> = props => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: props.preset.id,
@@ -27,6 +28,7 @@ export const SortablePresetItem: React.FC<{
       onClick={props.onClick}
       preset={props.preset}
       hidden={props.hidden}
+      autoFocus={props.autoFocus}
     />
   );
 };
